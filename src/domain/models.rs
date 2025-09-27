@@ -3,8 +3,8 @@ use uuid::Uuid;
 use crate::domain::DomainError;
 
 pub struct Node {
-    id: Uuid,
-    text: String,
+    pub id: Uuid,
+    pub text: String,
 }
 
 impl Node {
