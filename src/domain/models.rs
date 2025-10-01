@@ -2,6 +2,7 @@ use uuid::Uuid;
 
 use crate::domain::DomainError;
 
+#[derive(Debug)]
 pub struct Node {
     pub id: Uuid,
     pub text: String,

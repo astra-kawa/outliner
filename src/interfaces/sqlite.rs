@@ -19,7 +19,7 @@ impl SqliteStore {
                 )",
                 (),
             )
-            .map_err(|_| InterfaceError::Other)?;
+            .map_err(|_| InterfaceError::TableCreation)?;
 
         Ok(SqliteStore { connection })
     }
@@ -27,14 +27,14 @@ impl SqliteStore {
 
 impl NodeStore for SqliteStore {
     fn create_node(&self, text: &str) -> Result<Node, InterfaceError> {
-        let node = Node::new(text).map_err(|_| InterfaceError::Other)?;
+        let node = Node::new(text).map_err(|_| InterfaceError::NodeCreation)?;
 
         self.connection
             .execute(
-                "INSERT INTO person (id, text) VALUES (?1, ?2)",
+                "INSERT INTO outline (id, text) VALUES (?1, ?2)",
                 (node.id.to_string(), &node.text),
             )
-            .map_err(|_| InterfaceError::Other)?;
+            .map_err(|_| InterfaceError::NodeWrite)?;
 
         Ok(node)
     }

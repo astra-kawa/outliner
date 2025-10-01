@@ -1,6 +1,28 @@
+use crate::interfaces::{NodeStore, SqliteStore};
+
 mod domain;
 mod interfaces;
 
 fn main() {
-    todo!()
+    let store = SqliteStore::new_memory().unwrap();
+
+    match store.create_node("New node 1") {
+        Ok(node) => println!("Created node: {node:?}"),
+        Err(err) => eprintln!("Error: {err}"),
+    };
+
+    match store.create_node("New node 2") {
+        Ok(node) => println!("Created node: {node:?}"),
+        Err(err) => eprintln!("Error: {err}"),
+    };
+
+    match store.create_node("New node 3") {
+        Ok(node) => println!("Created node: {node:?}"),
+        Err(err) => eprintln!("Error: {err}"),
+    };
+
+    let nodes = store.dump_nodes().unwrap();
+    for node in nodes {
+        println!("Retrieved node: {node:?}")
+    }
 }
