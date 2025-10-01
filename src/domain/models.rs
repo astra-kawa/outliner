@@ -1,18 +1,50 @@
-use uuid::Uuid;
+use std::str::FromStr;
 
 use crate::domain::DomainError;
+use hifitime::Epoch;
+use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct Node {
     pub id: Uuid,
+    pub created_time: Epoch,
+    pub modified_time: Epoch,
     pub text: String,
+    pub author: String,
+    pub source_type: Source,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Source {
+    User,
+    Agent,
+    Application,
+}
+
+impl FromStr for Source {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<Source, Self::Err> {
+        match input {
+            "User" | "USER" | "user" => Ok(Source::User),
+            "Agent" | "AGENT" | "agent" => Ok(Source::Agent),
+            "Application" | "APPLICATION" | "application" => Ok(Source::Application),
+            _ => Err(()),
+        }
+    }
 }
 
 impl Node {
-    pub fn new(text: &str) -> Result<Node, DomainError> {
+    pub fn new(text: &str, author: &str, source_type: Source) -> Result<Node, DomainError> {
+        let now = Epoch::now().map_err(|_| DomainError::Other)?;
+
         Ok(Node {
             id: Uuid::new_v4(),
+            created_time: now,
+            modified_time: now,
             text: text.into(),
+            author: author.into(),
+            source_type,
         })
     }
 }
