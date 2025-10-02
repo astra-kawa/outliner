@@ -5,7 +5,9 @@ use crate::domain::{
     Node,
     models::{NodeType, Source},
 };
+use hifitime::prelude::*;
 use rusqlite::{Connection, Error, Row};
+use std::str::FromStr;
 use uuid::Uuid;
 
 pub struct SqliteRepository {
@@ -135,25 +137,27 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
     let id_str: String = row
         .get(0)
         .map_err(|_| InterfaceError::FieldParseError("id".to_owned()))?;
+    let id =
+        Uuid::parse_str(&id_str).map_err(|_| InterfaceError::FieldParseError("id".to_owned()))?;
 
-    let parent_id_str: Option<String> = row
-        .get(1)
-        .map_err(|_| InterfaceError::FieldParseError("parent_id".to_owned()))?;
+    let parent_id = optional_uuid(row, 1)?;
+    let previous_id = optional_uuid(row, 2)?;
 
-    let previous_id_str: Option<String> = row
-        .get(2)
-        .map_err(|_| InterfaceError::FieldParseError("previous_id".to_owned()))?;
-
-    let created_time_str: String = row
+    let created_str: String = row
         .get(3)
         .map_err(|_| InterfaceError::FieldParseError("created_time".to_owned()))?;
-
-    let modified_time_str: String = row
+    let modified_str: String = row
         .get(4)
+        .map_err(|_| InterfaceError::FieldParseError("modified_time".to_owned()))?;
+    let created_time = Epoch::from_str(&created_str)
+        .map_err(|_| InterfaceError::FieldParseError("created_time".to_owned()))?;
+    let modified_time = Epoch::from_str(&modified_str)
         .map_err(|_| InterfaceError::FieldParseError("modified_time".to_owned()))?;
 
     let node_type_str: String = row
         .get(5)
+        .map_err(|_| InterfaceError::FieldParseError("node_type".to_owned()))?;
+    let node_type = NodeType::from_str(&node_type_str)
         .map_err(|_| InterfaceError::FieldParseError("node_type".to_owned()))?;
 
     let text: String = row
@@ -166,17 +170,25 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
     let source_str: String = row
         .get(8)
         .map_err(|_| InterfaceError::FieldParseError("source".to_owned()))?;
+    let source = Source::from_str(&source_str)
+        .map_err(|_| InterfaceError::FieldParseError("source".to_owned()))?;
 
-    Node::from_raw_strs(
-        id_str,
-        parent_id_str,
-        previous_id_str,
-        created_time_str,
-        modified_time_str,
-        node_type_str,
+    Ok(Node {
+        id,
+        parent_id,
+        previous_id,
+        created_time,
+        modified_time,
+        node_type,
         text,
         author,
-        source_str,
-    )
-    .map_err(InterfaceError::Domain)
+        source_type: source,
+    })
+}
+
+fn optional_uuid(row: &Row<'_>, index: usize) -> Result<Option<Uuid>, InterfaceError> {
+    let value: Option<String> = row.get(index).map_err(|_| InterfaceError::Other)?;
+    value
+        .map(|value| Uuid::parse_str(&value).map_err(|_| InterfaceError::Other))
+        .transpose()
 }

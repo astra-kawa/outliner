@@ -107,60 +107,6 @@ impl Node {
         })
     }
 
-    pub fn from_raw_strs(
-        id_str: String,
-        parent_id_str: Option<String>,
-        previous_id_str: Option<String>,
-        created_time_str: String,
-        modified_time_str: String,
-        node_type_str: String,
-        text: String,
-        author: String,
-        source_type_str: String,
-    ) -> Result<Self, DomainError> {
-        let id = Uuid::parse_str(&id_str).map_err(|_| DomainError::FieldParseError("id".into()))?;
-
-        let parent_id = match parent_id_str {
-            Some(str) => match Uuid::parse_str(&str) {
-                Ok(id) => Some(id),
-                Err(_) => return Err(DomainError::FieldParseError("parent_id".into())),
-            },
-            None => None,
-        };
-
-        let previous_id = match previous_id_str {
-            Some(str) => match Uuid::parse_str(&str) {
-                Ok(id) => Some(id),
-                Err(_) => return Err(DomainError::FieldParseError("previous_id".into())),
-            },
-            None => None,
-        };
-
-        let created_time = Epoch::from_str(&created_time_str)
-            .map_err(|_| DomainError::FieldParseError("created_time".into()))?;
-
-        let modified_time = Epoch::from_str(&modified_time_str)
-            .map_err(|_| DomainError::FieldParseError("modified_time".into()))?;
-
-        let node_type = NodeType::from_str(&node_type_str)
-            .map_err(|_| DomainError::FieldParseError("node_type".into()))?;
-
-        let source_type = Source::from_str(&source_type_str)
-            .map_err(|_| DomainError::FieldParseError("source".to_owned()))?;
-
-        Ok(Node {
-            id,
-            parent_id,
-            previous_id,
-            created_time,
-            modified_time,
-            node_type,
-            text,
-            author,
-            source_type,
-        })
-    }
-
     pub fn update(mut self, text: impl Into<String>) -> Result<Self, DomainError> {
         self.text = text.into();
         self.modified_time = Epoch::now().map_err(|_| DomainError::InvalidDateTime)?;
