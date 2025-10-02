@@ -81,6 +81,21 @@ impl NodeStore for SqliteStore {
             .map_err(|_| InterfaceError::Other)
     }
 
+    fn update_node(&self, updated_node: &Node) -> Result<(), InterfaceError> {
+        self.connection
+            .execute(
+                "UPDATE outline SET text = ?1, modified_time = ?2 WHERE id = ?3",
+                (
+                    &updated_node.text,
+                    &updated_node.modified_time.to_string(),
+                    &updated_node.id.to_string(),
+                ),
+            )
+            .map_err(|_| InterfaceError::NodeUpdate)?;
+
+        Ok(())
+    }
+
     fn dump_nodes(&self) -> Result<Vec<Node>, InterfaceError> {
         let mut query = self
             .connection

@@ -22,14 +22,23 @@ fn main() {
     };
 
     println!();
-    let nodes = store.dump_nodes().unwrap();
+    let mut nodes = store.dump_nodes().unwrap();
     for node in nodes.iter() {
         println!("Retrieved node: {node:?}")
     }
 
     println!();
-    let node1_id = nodes.first().unwrap().id;
-    match store.get_node(&node1_id) {
+    let node1 = nodes.remove(0);
+    match store.get_node(&node1.id) {
+        Ok(node) => println!("Got node: {node:?}"),
+        Err(err) => eprintln!("Error: {err}"),
+    };
+
+    println!();
+    let node1 = node1.update("Updated node 1 with new text").unwrap();
+    let _ = store.update_node(&node1);
+
+    match store.get_node(&node1.id) {
         Ok(node) => println!("Got node: {node:?}"),
         Err(err) => eprintln!("Error: {err}"),
     };

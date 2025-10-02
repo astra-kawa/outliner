@@ -8,6 +8,8 @@ pub enum InterfaceError {
     NodeCreation,
     #[error("Node write error")]
     NodeWrite,
+    #[error("Node update error")]
+    NodeUpdate,
     #[error("Other error encountered")]
     Other,
 }

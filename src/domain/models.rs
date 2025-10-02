@@ -43,7 +43,7 @@ impl Node {
         text: &str,
         author: &str,
         source_type: Source,
-    ) -> Result<Node, DomainError> {
+    ) -> Result<Self, DomainError> {
         let now = Epoch::now().map_err(|_| DomainError::Other)?;
 
         Ok(Node {
@@ -55,6 +55,20 @@ impl Node {
             text: text.into(),
             author: author.into(),
             source_type,
+        })
+    }
+
+    pub fn update(self, text: &str) -> Result<Self, DomainError> {
+        // self.text = text.to_owned();
+        // self.modified_time = Epoch::now().map_err(|_| DomainError::Other)?;
+
+        // Ok(self)
+        let new_time = Epoch::now().map_err(|_| DomainError::Other)?;
+
+        Ok(Node {
+            text: text.to_owned(),
+            modified_time: new_time,
+            ..self
         })
     }
 }
