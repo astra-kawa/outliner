@@ -82,7 +82,8 @@ impl NodeStore for SqliteStore {
     }
 
     fn update_node(&self, updated_node: &Node) -> Result<(), InterfaceError> {
-        self.connection
+        let update_row_count = self
+            .connection
             .execute(
                 "UPDATE outline SET text = ?1, modified_time = ?2 WHERE id = ?3",
                 (
@@ -92,6 +93,10 @@ impl NodeStore for SqliteStore {
                 ),
             )
             .map_err(|_| InterfaceError::NodeUpdate)?;
+
+        if update_row_count == 0 {
+            return Err(InterfaceError::MissingNodeOperation);
+        }
 
         Ok(())
     }

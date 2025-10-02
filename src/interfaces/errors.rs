@@ -10,6 +10,8 @@ pub enum InterfaceError {
     NodeWrite,
     #[error("Node update error")]
     NodeUpdate,
+    #[error("Operation performed on missing node")]
+    MissingNodeOperation,
     #[error("Other error encountered")]
     Other,
 }
