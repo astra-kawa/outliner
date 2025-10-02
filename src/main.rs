@@ -1,4 +1,7 @@
-use crate::interfaces::{NodeStore, SqliteStore};
+use crate::{
+    domain::models::Source,
+    interfaces::{NodeStore, SqliteStore},
+};
 
 mod domain;
 mod interfaces;
@@ -6,17 +9,35 @@ mod interfaces;
 fn main() {
     let store = SqliteStore::new_memory().unwrap();
 
-    match store.create_node("New node 1") {
-        Ok(node) => println!("Created node: {node:?}"),
-        Err(err) => eprintln!("Error: {err}"),
+    let node1 = match store.create_node(None, None, "New node 1", "astra", Source::User) {
+        Ok(node) => {
+            println!("Created node: {node:?}");
+            node
+        }
+        Err(err) => {
+            eprintln!("Error: {err}");
+            return;
+        }
     };
 
-    match store.create_node("New node 2") {
-        Ok(node) => println!("Created node: {node:?}"),
-        Err(err) => eprintln!("Error: {err}"),
+    let node2 = match store.create_node(Some(node1.id), None, "New node 2", "astra", Source::User) {
+        Ok(node) => {
+            println!("Created node: {node:?}");
+            node
+        }
+        Err(err) => {
+            eprintln!("Error: {err}");
+            return;
+        }
     };
 
-    match store.create_node("New node 3") {
+    match store.create_node(
+        Some(node1.id),
+        Some(node2.id),
+        "New node 3",
+        "astra",
+        Source::User,
+    ) {
         Ok(node) => println!("Created node: {node:?}"),
         Err(err) => eprintln!("Error: {err}"),
     };
