@@ -21,11 +21,13 @@ fn main() {
         Err(err) => eprintln!("Error: {err}"),
     };
 
+    println!();
     let nodes = store.dump_nodes().unwrap();
     for node in nodes.iter() {
         println!("Retrieved node: {node:?}")
     }
 
+    println!();
     let node1_id = nodes.first().unwrap().id;
     match store.get_node(&node1_id) {
         Ok(node) => println!("Got node: {node:?}"),

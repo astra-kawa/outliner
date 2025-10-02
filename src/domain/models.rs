@@ -7,6 +7,8 @@ use uuid::Uuid;
 #[derive(Debug)]
 pub struct Node {
     pub id: Uuid,
+    pub parent_id: Option<Uuid>,
+    pub next_id: Option<Uuid>,
     pub created_time: Epoch,
     pub modified_time: Epoch,
     pub text: String,
@@ -35,11 +37,19 @@ impl FromStr for Source {
 }
 
 impl Node {
-    pub fn new(text: &str, author: &str, source_type: Source) -> Result<Node, DomainError> {
+    pub fn new(
+        parent: Option<Uuid>,
+        next: Option<Uuid>,
+        text: &str,
+        author: &str,
+        source_type: Source,
+    ) -> Result<Node, DomainError> {
         let now = Epoch::now().map_err(|_| DomainError::Other)?;
 
         Ok(Node {
             id: Uuid::new_v4(),
+            parent_id: parent,
+            next_id: next,
             created_time: now,
             modified_time: now,
             text: text.into(),
