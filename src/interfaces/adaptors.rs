@@ -1,5 +1,8 @@
 use super::errors::InterfaceError;
-use crate::domain::{Node, models::Source};
+use crate::domain::{
+    Node,
+    models::{NodeType, Source},
+};
 use uuid::Uuid;
 
 pub trait NodeStore {
@@ -7,6 +10,7 @@ pub trait NodeStore {
         &self,
         parent: Option<Uuid>,
         previous: Option<Uuid>,
+        node_type: NodeType,
         text: &str,
         author: &str,
         source: Source,
