@@ -55,7 +55,7 @@ impl Node {
         author: &str,
         source_type: Source,
     ) -> Result<Self, DomainError> {
-        let now = Epoch::now().map_err(|_| DomainError::Other)?;
+        let now = Epoch::now().map_err(|_| DomainError::InvalidDateTime)?;
 
         Ok(Node {
             id: Uuid::new_v4(),
@@ -71,7 +71,7 @@ impl Node {
 
     pub fn update(mut self, text: impl Into<String>) -> Result<Self, DomainError> {
         self.text = text.into();
-        self.modified_time = Epoch::now().map_err(|_| DomainError::Other)?;
+        self.modified_time = Epoch::now().map_err(|_| DomainError::InvalidDateTime)?;
 
         Ok(self)
     }

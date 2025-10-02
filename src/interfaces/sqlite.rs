@@ -11,7 +11,7 @@ pub struct SqliteStore {
 
 impl SqliteStore {
     pub fn new_memory() -> Result<SqliteStore, InterfaceError> {
-        let connection = Connection::open_in_memory().map_err(|_| InterfaceError::Other)?;
+        let connection = Connection::open_in_memory().map_err(|_| InterfaceError::DbConnection)?;
 
         connection
             .execute(
@@ -79,7 +79,7 @@ impl NodeStore for SqliteStore {
                 row_to_node(row).map_err(|_| Error::InvalidQuery)
             })
             .map_err(|err| match err {
-                Error::QueryReturnedNoRows => InterfaceError::MissingNodeOperation,
+                Error::QueryReturnedNoRows => InterfaceError::MissingNode,
                 _ => InterfaceError::Other,
             })
     }
@@ -112,7 +112,7 @@ impl NodeStore for SqliteStore {
 
         let nodes = query
             .query_map([], |row| row_to_node(row).map_err(|_| Error::InvalidQuery))
-            .map_err(|_| InterfaceError::Other)?;
+            .map_err(|_| InterfaceError::InvalidQuery)?;
 
         nodes
             .collect::<Result<Vec<_>, _>>()
@@ -121,22 +121,38 @@ impl NodeStore for SqliteStore {
 }
 
 fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
-    let id_str: String = row.get(0).map_err(|_| InterfaceError::Other)?;
-    let id = Uuid::parse_str(&id_str).map_err(|_| InterfaceError::Other)?;
+    let id_str: String = row
+        .get(0)
+        .map_err(|_| InterfaceError::FieldParseError("id".to_owned()))?;
+    let id =
+        Uuid::parse_str(&id_str).map_err(|_| InterfaceError::FieldParseError("id".to_owned()))?;
 
     let parent_id = optional_uuid(row, 1)?;
     let previous_id = optional_uuid(row, 2)?;
 
-    let created_str: String = row.get(3).map_err(|_| InterfaceError::Other)?;
-    let modified_str: String = row.get(4).map_err(|_| InterfaceError::Other)?;
-    let created_time = Epoch::from_str(&created_str).map_err(|_| InterfaceError::Other)?;
-    let modified_time = Epoch::from_str(&modified_str).map_err(|_| InterfaceError::Other)?;
+    let created_str: String = row
+        .get(3)
+        .map_err(|_| InterfaceError::FieldParseError("created_time".to_owned()))?;
+    let modified_str: String = row
+        .get(4)
+        .map_err(|_| InterfaceError::FieldParseError("modified_time".to_owned()))?;
+    let created_time = Epoch::from_str(&created_str)
+        .map_err(|_| InterfaceError::FieldParseError("created_time".to_owned()))?;
+    let modified_time = Epoch::from_str(&modified_str)
+        .map_err(|_| InterfaceError::FieldParseError("modified_time".to_owned()))?;
 
-    let text: String = row.get(5).map_err(|_| InterfaceError::Other)?;
-    let author: String = row.get(6).map_err(|_| InterfaceError::Other)?;
+    let text: String = row
+        .get(5)
+        .map_err(|_| InterfaceError::FieldParseError("text".to_owned()))?;
+    let author: String = row
+        .get(6)
+        .map_err(|_| InterfaceError::FieldParseError("author".to_owned()))?;
 
-    let source_str: String = row.get(7).map_err(|_| InterfaceError::Other)?;
-    let source = Source::from_str(&source_str).map_err(|_| InterfaceError::Other)?;
+    let source_str: String = row
+        .get(7)
+        .map_err(|_| InterfaceError::FieldParseError("source".to_owned()))?;
+    let source = Source::from_str(&source_str)
+        .map_err(|_| InterfaceError::FieldParseError("source".to_owned()))?;
 
     Ok(Node {
         id,
