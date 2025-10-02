@@ -18,7 +18,7 @@ impl SqliteStore {
                 "CREATE TABLE outline (
                 id            TEXT PRIMARY KEY,
                 parent_id     TEXT,
-                next_id       TEXT,
+                previous_id   TEXT,
                 created_time  TEXT,
                 modified_time TEXT,
                 text          TEXT,
@@ -34,8 +34,15 @@ impl SqliteStore {
 }
 
 impl NodeStore for SqliteStore {
-    fn create_node(&self, text: &str) -> Result<Node, InterfaceError> {
-        let node = Node::new(None, None, text, "author", Source::User)
+    fn create_node(
+        &self,
+        parent: Option<Uuid>,
+        previous: Option<Uuid>,
+        text: &str,
+        author: &str,
+        source: Source,
+    ) -> Result<Node, InterfaceError> {
+        let node = Node::new(parent, previous, text, author, source)
             .map_err(|_| InterfaceError::NodeCreation)?;
 
         let parent_str = match node.parent_id {
@@ -43,14 +50,14 @@ impl NodeStore for SqliteStore {
             None => "".to_string(),
         };
 
-        let next_str = match node.next_id {
+        let next_str = match node.previous_id {
             Some(id) => id.to_string(),
             None => "".to_string(),
         };
 
         self.connection
             .execute(
-                "INSERT INTO outline (id, parent_id, next_id, created_time, modified_time, text, author, source_type) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                "INSERT INTO outline (id, parent_id, previous_id, created_time, modified_time, text, author, source_type) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                 (
                     &node.id.to_string(),
                     &parent_str,
@@ -132,10 +139,10 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
         _ => Some(Uuid::parse_str(&parent_str).unwrap()),
     };
 
-    let next_str: String = row.get(2).map_err(|_| InterfaceError::Other)?;
-    let next_id = match next_str.as_str() {
+    let previous_str: String = row.get(2).map_err(|_| InterfaceError::Other)?;
+    let previous_id = match previous_str.as_str() {
         "" => None,
-        _ => Some(Uuid::parse_str(&next_str).unwrap()),
+        _ => Some(Uuid::parse_str(&previous_str).unwrap()),
     };
 
     let created_str: String = row.get(3).map_err(|_| InterfaceError::Other)?;
@@ -147,7 +154,7 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
     Ok(Node {
         id: Uuid::parse_str(&id_str).unwrap(),
         parent_id,
-        next_id,
+        previous_id,
         created_time: Epoch::from_str(&created_str).unwrap(),
         modified_time: Epoch::from_str(&modified_str).unwrap(),
         text: row.get(5).unwrap(),

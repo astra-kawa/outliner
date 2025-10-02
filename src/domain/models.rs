@@ -8,7 +8,7 @@ use uuid::Uuid;
 pub struct Node {
     pub id: Uuid,
     pub parent_id: Option<Uuid>,
-    pub next_id: Option<Uuid>,
+    pub previous_id: Option<Uuid>,
     pub created_time: Epoch,
     pub modified_time: Epoch,
     pub text: String,
@@ -39,7 +39,7 @@ impl FromStr for Source {
 impl Node {
     pub fn new(
         parent: Option<Uuid>,
-        next: Option<Uuid>,
+        previous: Option<Uuid>,
         text: &str,
         author: &str,
         source_type: Source,
@@ -49,7 +49,7 @@ impl Node {
         Ok(Node {
             id: Uuid::new_v4(),
             parent_id: parent,
-            next_id: next,
+            previous_id: previous,
             created_time: now,
             modified_time: now,
             text: text.into(),
