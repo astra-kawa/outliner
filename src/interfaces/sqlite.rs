@@ -115,7 +115,7 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
     let next_str: String = row.get(2).map_err(|_| InterfaceError::Other)?;
     let next_id = match next_str.as_str() {
         "" => None,
-        _ => Some(Uuid::parse_str(&parent_str).unwrap()),
+        _ => Some(Uuid::parse_str(&next_str).unwrap()),
     };
 
     let created_str: String = row.get(3).map_err(|_| InterfaceError::Other)?;
