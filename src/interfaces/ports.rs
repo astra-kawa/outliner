@@ -5,7 +5,7 @@ use crate::domain::{
 };
 use uuid::Uuid;
 
-pub trait NodeStore {
+pub trait NodeRepository {
     fn create_node(
         &self,
         parent: Option<Uuid>,

@@ -1,4 +1,4 @@
-use super::{InterfaceError, NodeStore};
+use super::{InterfaceError, NodeRepository};
 use crate::domain::{
     Node,
     models::{NodeType, Source},
@@ -8,12 +8,12 @@ use rusqlite::{Connection, Error, Row};
 use std::str::FromStr;
 use uuid::Uuid;
 
-pub struct SqliteStore {
+pub struct SqliteRepository {
     connection: Connection,
 }
 
-impl SqliteStore {
-    pub fn new_memory() -> Result<SqliteStore, InterfaceError> {
+impl SqliteRepository {
+    pub fn new_memory() -> Result<SqliteRepository, InterfaceError> {
         let connection = Connection::open_in_memory().map_err(|_| InterfaceError::DbConnection)?;
 
         connection
@@ -33,11 +33,11 @@ impl SqliteStore {
             )
             .map_err(|_| InterfaceError::TableCreation)?;
 
-        Ok(SqliteStore { connection })
+        Ok(SqliteRepository { connection })
     }
 }
 
-impl NodeStore for SqliteStore {
+impl NodeRepository for SqliteRepository {
     fn create_node(
         &self,
         parent: Option<Uuid>,

@@ -1,13 +1,13 @@
 use crate::{
     domain::models::{NodeType, Source},
-    interfaces::{NodeStore, SqliteStore},
+    interfaces::{NodeRepository, SqliteRepository},
 };
 
 mod domain;
 mod interfaces;
 
 fn main() {
-    let store = SqliteStore::new_memory().unwrap();
+    let store = SqliteRepository::new_memory().unwrap();
 
     let node1 = match store.create_node(
         None,
