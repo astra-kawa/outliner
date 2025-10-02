@@ -1,5 +1,5 @@
 use crate::{
-    domain::models::Source,
+    domain::models::{NodeType, Source},
     interfaces::{NodeStore, SqliteStore},
 };
 
@@ -9,7 +9,14 @@ mod interfaces;
 fn main() {
     let store = SqliteStore::new_memory().unwrap();
 
-    let node1 = match store.create_node(None, None, "New node 1", "astra", Source::User) {
+    let node1 = match store.create_node(
+        None,
+        None,
+        NodeType::Standard,
+        "New node 1",
+        "astra",
+        Source::User,
+    ) {
         Ok(node) => {
             println!("Created node: {node:?}");
             node
@@ -20,7 +27,14 @@ fn main() {
         }
     };
 
-    let node2 = match store.create_node(Some(node1.id), None, "New node 2", "astra", Source::User) {
+    let node2 = match store.create_node(
+        Some(node1.id),
+        None,
+        NodeType::Standard,
+        "New node 2",
+        "astra",
+        Source::User,
+    ) {
         Ok(node) => {
             println!("Created node: {node:?}");
             node
@@ -34,6 +48,7 @@ fn main() {
     match store.create_node(
         Some(node1.id),
         Some(node2.id),
+        NodeType::Standard,
         "New node 3",
         "astra",
         Source::User,

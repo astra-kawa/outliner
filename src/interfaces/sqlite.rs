@@ -1,5 +1,8 @@
 use super::{InterfaceError, NodeStore};
-use crate::domain::{Node, models::Source};
+use crate::domain::{
+    Node,
+    models::{NodeType, Source},
+};
 use hifitime::prelude::*;
 use rusqlite::{Connection, Error, Row};
 use std::str::FromStr;
@@ -21,6 +24,7 @@ impl SqliteStore {
                 previous_id   TEXT,
                 created_time  TEXT,
                 modified_time TEXT,
+                node_type     TEXT,
                 text          TEXT,
                 author        TEXT,
                 source_type   TEXT
@@ -38,11 +42,12 @@ impl NodeStore for SqliteStore {
         &self,
         parent: Option<Uuid>,
         previous: Option<Uuid>,
+        node_type: NodeType,
         text: &str,
         author: &str,
         source: Source,
     ) -> Result<Node, InterfaceError> {
-        let node = Node::new(parent, previous, text, author, source)
+        let node = Node::new(parent, previous, node_type, text, author, source)
             .map_err(|_| InterfaceError::NodeCreation)?;
 
         let id = node.id.to_string();
@@ -50,17 +55,19 @@ impl NodeStore for SqliteStore {
         let previous_id = node.previous_id.map(|id| id.to_string());
         let created_time = node.created_time.to_string();
         let modified_time = node.modified_time.to_string();
+        let node_type = node.node_type.to_string();
         let source = node.source_type.to_string();
 
         self.connection
             .execute(
-                "INSERT INTO outline (id, parent_id, previous_id, created_time, modified_time, text, author, source_type) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                "INSERT INTO outline (id, parent_id, previous_id, created_time, modified_time, node_type, text, author, source_type) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
                 rusqlite::params![
                     id,
                     parent_id,
                     previous_id,
                     created_time,
                     modified_time,
+                    node_type,
                     &node.text,
                     &node.author,
                     source,
@@ -141,15 +148,21 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
     let modified_time = Epoch::from_str(&modified_str)
         .map_err(|_| InterfaceError::FieldParseError("modified_time".to_owned()))?;
 
-    let text: String = row
+    let node_type_str: String = row
         .get(5)
+        .map_err(|_| InterfaceError::FieldParseError("node_type".to_owned()))?;
+    let node_type = NodeType::from_str(&node_type_str)
+        .map_err(|_| InterfaceError::FieldParseError("node_type".to_owned()))?;
+
+    let text: String = row
+        .get(6)
         .map_err(|_| InterfaceError::FieldParseError("text".to_owned()))?;
     let author: String = row
-        .get(6)
+        .get(7)
         .map_err(|_| InterfaceError::FieldParseError("author".to_owned()))?;
 
     let source_str: String = row
-        .get(7)
+        .get(8)
         .map_err(|_| InterfaceError::FieldParseError("source".to_owned()))?;
     let source = Source::from_str(&source_str)
         .map_err(|_| InterfaceError::FieldParseError("source".to_owned()))?;
@@ -160,6 +173,7 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
         previous_id,
         created_time,
         modified_time,
+        node_type,
         text,
         author,
         source_type: source,

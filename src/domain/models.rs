@@ -10,6 +10,7 @@ pub struct Node {
     pub previous_id: Option<Uuid>,
     pub created_time: Epoch,
     pub modified_time: Epoch,
+    pub node_type: NodeType,
     pub text: String,
     pub author: String,
     pub source_type: Source,
@@ -47,10 +48,46 @@ impl fmt::Display for Source {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub enum NodeType {
+    Standard,
+    Todo,
+    InProgress,
+    Done,
+}
+
+impl FromStr for NodeType {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<NodeType, Self::Err> {
+        match input.to_ascii_lowercase().as_str() {
+            "standard" => Ok(NodeType::Standard),
+            "todo" => Ok(NodeType::Todo),
+            "inprogress" => Ok(NodeType::InProgress),
+            "done" => Ok(NodeType::Done),
+            _ => Err(()),
+        }
+    }
+}
+
+impl fmt::Display for NodeType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let label = match self {
+            NodeType::Standard => "Standard",
+            NodeType::Todo => "Todo",
+            NodeType::InProgress => "InProgress",
+            NodeType::Done => "Done",
+        };
+
+        f.write_str(label)
+    }
+}
+
 impl Node {
     pub fn new(
         parent: Option<Uuid>,
         previous: Option<Uuid>,
+        node_type: NodeType,
         text: &str,
         author: &str,
         source_type: Source,
@@ -63,6 +100,7 @@ impl Node {
             previous_id: previous,
             created_time: now,
             modified_time: now,
+            node_type,
             text: text.into(),
             author: author.into(),
             source_type,
