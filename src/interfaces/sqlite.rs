@@ -1,8 +1,8 @@
 use super::{InterfaceError, NodeStore};
 use crate::domain::{Node, models::Source};
-use core::str::FromStr;
 use hifitime::prelude::*;
 use rusqlite::{Connection, Error, Row};
+use std::str::FromStr;
 use uuid::Uuid;
 
 pub struct SqliteStore {
@@ -45,29 +45,26 @@ impl NodeStore for SqliteStore {
         let node = Node::new(parent, previous, text, author, source)
             .map_err(|_| InterfaceError::NodeCreation)?;
 
-        let parent_str = match node.parent_id {
-            Some(id) => id.to_string(),
-            None => "".to_string(),
-        };
-
-        let next_str = match node.previous_id {
-            Some(id) => id.to_string(),
-            None => "".to_string(),
-        };
+        let id = node.id.to_string();
+        let parent_id = node.parent_id.map(|id| id.to_string());
+        let previous_id = node.previous_id.map(|id| id.to_string());
+        let created_time = node.created_time.to_string();
+        let modified_time = node.modified_time.to_string();
+        let source = node.source_type.to_string();
 
         self.connection
             .execute(
                 "INSERT INTO outline (id, parent_id, previous_id, created_time, modified_time, text, author, source_type) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-                (
-                    &node.id.to_string(),
-                    &parent_str,
-                    &next_str,
-                    &node.created_time.to_string(),
-                    &node.modified_time.to_string(),
+                rusqlite::params![
+                    id,
+                    parent_id,
+                    previous_id,
+                    created_time,
+                    modified_time,
                     &node.text,
                     &node.author,
-                    format!("{:?}", node.source_type)
-                ),
+                    source,
+                ],
             )
             .map_err(|_| InterfaceError::NodeWrite)?;
 
@@ -75,17 +72,16 @@ impl NodeStore for SqliteStore {
     }
 
     fn get_node(&self, node_id: &Uuid) -> Result<Node, InterfaceError> {
-        let mut query = self
-            .connection
+        self.connection
             .prepare("SELECT * FROM outline WHERE id = ?1")
-            .map_err(|_| InterfaceError::Other)?;
-
-        query
-            .query_one([node_id.to_string()], |row| match row_to_node(row) {
-                Ok(node) => Ok(node),
-                Err(_) => Err(Error::InvalidQuery),
+            .map_err(|_| InterfaceError::Other)?
+            .query_row([node_id.to_string()], |row| {
+                row_to_node(row).map_err(|_| Error::InvalidQuery)
             })
-            .map_err(|_| InterfaceError::Other)
+            .map_err(|err| match err {
+                Error::QueryReturnedNoRows => InterfaceError::MissingNodeOperation,
+                _ => InterfaceError::Other,
+            })
     }
 
     fn update_node(&self, updated_node: &Node) -> Result<(), InterfaceError> {
@@ -114,51 +110,49 @@ impl NodeStore for SqliteStore {
             .prepare("SELECT * FROM outline")
             .map_err(|_| InterfaceError::Other)?;
 
-        let query_result = query
-            .query_map([], |row| match row_to_node(row) {
-                Ok(node) => Ok(node),
-                Err(_) => Err(Error::InvalidQuery),
-            })
+        let nodes = query
+            .query_map([], |row| row_to_node(row).map_err(|_| Error::InvalidQuery))
             .map_err(|_| InterfaceError::Other)?;
 
-        let mut nodes: Vec<Node> = Vec::new();
-        for node_result in query_result {
-            nodes.push(node_result.unwrap());
-        }
-
-        Ok(nodes)
+        nodes
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| InterfaceError::Other)
     }
 }
 
 fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
     let id_str: String = row.get(0).map_err(|_| InterfaceError::Other)?;
+    let id = Uuid::parse_str(&id_str).map_err(|_| InterfaceError::Other)?;
 
-    let parent_str: String = row.get(1).map_err(|_| InterfaceError::Other)?;
-    let parent_id = match parent_str.as_str() {
-        "" => None,
-        _ => Some(Uuid::parse_str(&parent_str).unwrap()),
-    };
-
-    let previous_str: String = row.get(2).map_err(|_| InterfaceError::Other)?;
-    let previous_id = match previous_str.as_str() {
-        "" => None,
-        _ => Some(Uuid::parse_str(&previous_str).unwrap()),
-    };
+    let parent_id = optional_uuid(row, 1)?;
+    let previous_id = optional_uuid(row, 2)?;
 
     let created_str: String = row.get(3).map_err(|_| InterfaceError::Other)?;
     let modified_str: String = row.get(4).map_err(|_| InterfaceError::Other)?;
+    let created_time = Epoch::from_str(&created_str).map_err(|_| InterfaceError::Other)?;
+    let modified_time = Epoch::from_str(&modified_str).map_err(|_| InterfaceError::Other)?;
+
+    let text: String = row.get(5).map_err(|_| InterfaceError::Other)?;
+    let author: String = row.get(6).map_err(|_| InterfaceError::Other)?;
 
     let source_str: String = row.get(7).map_err(|_| InterfaceError::Other)?;
     let source = Source::from_str(&source_str).map_err(|_| InterfaceError::Other)?;
 
     Ok(Node {
-        id: Uuid::parse_str(&id_str).unwrap(),
+        id,
         parent_id,
         previous_id,
-        created_time: Epoch::from_str(&created_str).unwrap(),
-        modified_time: Epoch::from_str(&modified_str).unwrap(),
-        text: row.get(5).unwrap(),
-        author: row.get(6).unwrap(),
+        created_time,
+        modified_time,
+        text,
+        author,
         source_type: source,
     })
+}
+
+fn optional_uuid(row: &Row<'_>, index: usize) -> Result<Option<Uuid>, InterfaceError> {
+    let value: Option<String> = row.get(index).map_err(|_| InterfaceError::Other)?;
+    value
+        .map(|value| Uuid::parse_str(&value).map_err(|_| InterfaceError::Other))
+        .transpose()
 }

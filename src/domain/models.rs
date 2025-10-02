@@ -1,7 +1,6 @@
-use std::str::FromStr;
-
 use crate::domain::DomainError;
 use hifitime::Epoch;
+use std::{fmt, str::FromStr};
 use uuid::Uuid;
 
 #[derive(Debug)]
@@ -27,12 +26,24 @@ impl FromStr for Source {
     type Err = ();
 
     fn from_str(input: &str) -> Result<Source, Self::Err> {
-        match input {
-            "User" | "USER" | "user" => Ok(Source::User),
-            "Agent" | "AGENT" | "agent" => Ok(Source::Agent),
-            "Application" | "APPLICATION" | "application" => Ok(Source::Application),
+        match input.to_ascii_lowercase().as_str() {
+            "user" => Ok(Source::User),
+            "agent" => Ok(Source::Agent),
+            "application" => Ok(Source::Application),
             _ => Err(()),
         }
+    }
+}
+
+impl fmt::Display for Source {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let label = match self {
+            Source::User => "User",
+            Source::Agent => "Agent",
+            Source::Application => "Application",
+        };
+
+        f.write_str(label)
     }
 }
 
@@ -58,17 +69,10 @@ impl Node {
         })
     }
 
-    pub fn update(self, text: &str) -> Result<Self, DomainError> {
-        // self.text = text.to_owned();
-        // self.modified_time = Epoch::now().map_err(|_| DomainError::Other)?;
+    pub fn update(mut self, text: impl Into<String>) -> Result<Self, DomainError> {
+        self.text = text.into();
+        self.modified_time = Epoch::now().map_err(|_| DomainError::Other)?;
 
-        // Ok(self)
-        let new_time = Epoch::now().map_err(|_| DomainError::Other)?;
-
-        Ok(Node {
-            text: text.to_owned(),
-            modified_time: new_time,
-            ..self
-        })
+        Ok(self)
     }
 }
