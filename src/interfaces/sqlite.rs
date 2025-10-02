@@ -11,7 +11,6 @@ use std::str::FromStr;
 use uuid::Uuid;
 
 pub struct SqliteRepository {
-    db_path: Option<PathBuf>,
     connection: Connection,
 }
 
@@ -36,10 +35,7 @@ impl SqliteRepository {
             )
             .map_err(|_| InterfaceError::TableCreation)?;
 
-        Ok(SqliteRepository {
-            db_path: None,
-            connection,
-        })
+        Ok(SqliteRepository { connection })
     }
 }
 
