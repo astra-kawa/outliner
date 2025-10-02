@@ -1,5 +1,7 @@
 use thiserror::Error;
 
+use crate::domain::DomainError;
+
 #[derive(Error, Debug)]
 pub enum InterfaceError {
     #[error("Failed to connect to DB")]
@@ -20,6 +22,8 @@ pub enum InterfaceError {
     MissingNode,
     #[error("Error when parsing field: `{0}`")]
     FieldParseError(String),
+    #[error("Domain Error: `{0}`")]
+    Domain(DomainError),
     #[error("Other error encountered")]
     Other,
 }
