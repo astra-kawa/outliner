@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use super::{InterfaceError, NodeRepository};
 use crate::domain::{
     Node,
