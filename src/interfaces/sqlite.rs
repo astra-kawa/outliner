@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use super::{InterfaceError, NodeRepository};
 use crate::domain::{
     Node,
@@ -7,6 +9,7 @@ use rusqlite::{Connection, Error, Row};
 use uuid::Uuid;
 
 pub struct SqliteRepository {
+    db_path: Option<PathBuf>,
     connection: Connection,
 }
 
@@ -31,7 +34,10 @@ impl SqliteRepository {
             )
             .map_err(|_| InterfaceError::TableCreation)?;
 
-        Ok(SqliteRepository { connection })
+        Ok(SqliteRepository {
+            db_path: None,
+            connection,
+        })
     }
 }
 
