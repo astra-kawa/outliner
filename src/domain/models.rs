@@ -161,10 +161,10 @@ impl Node {
         })
     }
 
-    pub fn update(mut self, text: impl Into<String>) -> Result<Self, DomainError> {
+    pub fn update(&mut self, text: impl Into<String>) -> Result<(), DomainError> {
         self.text = text.into();
         self.modified_time = Epoch::now().map_err(|_| DomainError::InvalidDateTime)?;
 
-        Ok(self)
+        Ok(())
     }
 }

@@ -5,6 +5,7 @@ use crate::{
 
 mod domain;
 mod interfaces;
+mod services;
 
 fn main() {
     let store = SqliteRepository::new_memory().unwrap();
@@ -64,14 +65,14 @@ fn main() {
     }
 
     println!();
-    let node1 = nodes.remove(0);
+    let mut node1 = nodes.remove(0);
     match store.get_node(&node1.id) {
         Ok(node) => println!("Got node: {node:?}"),
         Err(err) => eprintln!("Error: {err}"),
     };
 
     println!();
-    let node1 = node1.update("Updated node 1 with new text").unwrap();
+    node1.update("Updated node 1 with new text").unwrap();
     let _ = store.update_node(&node1);
 
     match store.get_node(&node1.id) {
