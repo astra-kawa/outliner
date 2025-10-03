@@ -1,7 +1,7 @@
 use super::{InterfaceError, NodeRepository};
 use crate::domain::{
     Node,
-    models::{NodeType, Source},
+    models::{CreateNodeRequest, NodeType, Source},
 };
 use rusqlite::{Connection, Error, Row};
 use uuid::Uuid;
@@ -45,8 +45,8 @@ impl NodeRepository for SqliteRepository {
         author: &str,
         source: Source,
     ) -> Result<Node, InterfaceError> {
-        let node = Node::new(parent, previous, node_type, text, author, source)
-            .map_err(|_| InterfaceError::NodeCreation)?;
+        let request = CreateNodeRequest::new(parent, previous, node_type, text, author, source);
+        let node = Node::new(request).map_err(|_| InterfaceError::NodeCreation)?;
 
         let id = node.id.to_string();
         let parent_id = node.parent_id.map(|id| id.to_string());

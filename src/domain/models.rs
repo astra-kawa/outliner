@@ -84,26 +84,19 @@ impl fmt::Display for NodeType {
 }
 
 impl Node {
-    pub fn new(
-        parent: Option<Uuid>,
-        previous: Option<Uuid>,
-        node_type: NodeType,
-        text: &str,
-        author: &str,
-        source_type: Source,
-    ) -> Result<Self, DomainError> {
+    pub fn new(request: CreateNodeRequest) -> Result<Self, DomainError> {
         let now = Epoch::now().map_err(|_| DomainError::InvalidDateTime)?;
 
         Ok(Node {
             id: Uuid::new_v4(),
-            parent_id: parent,
-            previous_id: previous,
+            parent_id: request.parent_id,
+            previous_id: request.previous_id,
             created_time: now,
             modified_time: now,
-            node_type,
-            text: text.into(),
-            author: author.into(),
-            source_type,
+            node_type: request.node_type,
+            text: request.text,
+            author: request.author,
+            source_type: request.source_type,
         })
     }
 
@@ -166,5 +159,34 @@ impl Node {
         self.modified_time = Epoch::now().map_err(|_| DomainError::InvalidDateTime)?;
 
         Ok(())
+    }
+}
+
+pub struct CreateNodeRequest {
+    parent_id: Option<Uuid>,
+    previous_id: Option<Uuid>,
+    node_type: NodeType,
+    text: String,
+    author: String,
+    source_type: Source,
+}
+
+impl CreateNodeRequest {
+    pub fn new(
+        parent_id: Option<Uuid>,
+        previous_id: Option<Uuid>,
+        node_type: NodeType,
+        text: &str,
+        author: &str,
+        source_type: Source,
+    ) -> Self {
+        CreateNodeRequest {
+            parent_id,
+            previous_id,
+            node_type,
+            text: text.into(),
+            author: author.into(),
+            source_type,
+        }
     }
 }
