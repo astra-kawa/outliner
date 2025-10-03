@@ -8,7 +8,7 @@ pub struct Service<R>
 where
     R: NodeRepository,
 {
-    repository: R,
+    pub repository: R,
 }
 
 impl<R> NodeService for Service<R>

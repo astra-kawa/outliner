@@ -1,6 +1,7 @@
 use crate::{
     domain::models::{NodeType, Source},
     interfaces::{NodeRepository, SqliteRepository},
+    services::services::{NodeService, Service},
 };
 
 mod domain;
@@ -8,9 +9,11 @@ mod interfaces;
 mod services;
 
 fn main() {
-    let store = SqliteRepository::new_memory().unwrap();
+    let service = Service {
+        repository: SqliteRepository::new_memory().unwrap(),
+    };
 
-    let node1 = match store.create_node(
+    let node1 = match service.repository.create_node(
         None,
         None,
         NodeType::Standard,
@@ -28,7 +31,7 @@ fn main() {
         }
     };
 
-    let node2 = match store.create_node(
+    let node2 = match service.repository.create_node(
         Some(node1.id),
         None,
         NodeType::Standard,
@@ -46,7 +49,7 @@ fn main() {
         }
     };
 
-    match store.create_node(
+    match service.repository.create_node(
         Some(node1.id),
         Some(node2.id),
         NodeType::Standard,
@@ -59,23 +62,24 @@ fn main() {
     };
 
     println!();
-    let mut nodes = store.dump_nodes().unwrap();
+    let mut nodes = service.repository.dump_nodes().unwrap();
     for node in nodes.iter() {
         println!("Retrieved node: {node:?}")
     }
 
     println!();
     let mut node1 = nodes.remove(0);
-    match store.get_node(&node1.id) {
+    match service.repository.get_node(&node1.id) {
         Ok(node) => println!("Got node: {node:?}"),
         Err(err) => eprintln!("Error: {err}"),
     };
 
     println!();
-    node1.update("Updated node 1 with new text").unwrap();
-    let _ = store.update_node(&node1);
+    service
+        .update_node(&mut node1, "Updated node 1 with new text")
+        .unwrap();
 
-    match store.get_node(&node1.id) {
+    match service.repository.get_node(&node1.id) {
         Ok(node) => println!("Got node: {node:?}"),
         Err(err) => eprintln!("Error: {err}"),
     };
