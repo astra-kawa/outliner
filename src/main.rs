@@ -1,7 +1,7 @@
 use crate::{
     domain::models::{NodeType, Source},
     interfaces::{NodeRepository, SqliteRepository},
-    services::services::{NodeService, Service},
+    services::node_service::{NodeService, Service},
 };
 
 mod domain;
