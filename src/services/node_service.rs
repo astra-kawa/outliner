@@ -44,6 +44,8 @@ where
     }
 
     fn delete_node(&self, node: Node) -> Result<(), ServiceError> {
+        // todo: figure out how to handle deleting a node when it contains children
+        // additionally, if deleted node has a sibling, update the next node's previous_id
         self.repository
             .delete_node(&node.id())
             .map_err(|_| ServiceError::Other)?;
