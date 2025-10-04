@@ -15,7 +15,7 @@ fn main() {
 
     let node1 = match service.create_node(CreateNodeRequest::new(
         None,
-        "aaa",
+        "000000000aaa",
         NodeType::Standard,
         "New node 1",
         "astra",
@@ -33,7 +33,7 @@ fn main() {
 
     match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
-        "aaa",
+        "000000000aaa",
         NodeType::Standard,
         "New node 2",
         "astra",
@@ -51,7 +51,7 @@ fn main() {
 
     let node3 = match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
-        "bbb",
+        "000000000bbb",
         NodeType::Standard,
         "New node 3",
         "astra",

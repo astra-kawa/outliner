@@ -1,4 +1,4 @@
-use crate::domain::DomainError;
+use crate::domain::{DomainError, LexoRank};
 use hifitime::Epoch;
 use std::{fmt, str::FromStr};
 use uuid::Uuid;
@@ -7,7 +7,7 @@ use uuid::Uuid;
 pub struct Node {
     id: Uuid,
     parent_id: Option<Uuid>,
-    rank_key: String,
+    rank_key: LexoRank,
     created_time: Epoch,
     modified_time: Epoch,
     node_type: NodeType,
@@ -86,11 +86,12 @@ impl fmt::Display for NodeType {
 impl Node {
     pub fn new(request: CreateNodeRequest) -> Result<Self, DomainError> {
         let now = Epoch::now().map_err(|_| DomainError::InvalidDateTime)?;
+        let rank_key = LexoRank::new(&request.rank_key)?;
 
         Ok(Node {
             id: Uuid::new_v4(),
             parent_id: request.parent_id,
-            rank_key: request.rank_key,
+            rank_key,
             created_time: now,
             modified_time: now,
             node_type: request.node_type,
@@ -112,8 +113,8 @@ impl Node {
         self.parent_id.map(|id| id.to_string())
     }
 
-    pub fn rank_key(&self) -> String {
-        self.rank_key.to_string()
+    pub fn rank_key_str(&self) -> String {
+        self.rank_key.rank_key_str().to_string()
     }
 
     pub fn created_time_str(&self) -> String {
@@ -160,6 +161,8 @@ impl Node {
             },
             None => None,
         };
+
+        let rank_key = LexoRank::new(&rank_key)?;
 
         let created_time = Epoch::from_str(&created_time_str)
             .map_err(|_| DomainError::FieldParseError("created_time".into()))?;

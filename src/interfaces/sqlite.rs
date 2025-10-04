@@ -40,7 +40,7 @@ impl NodeRepository for SqliteRepository {
                 rusqlite::params![
                     node.id_str(),
                     node.parent_id_str(),
-                    node.rank_key(),
+                    node.rank_key_str(),
                     node.created_time_str(),
                     node.modified_time_str(),
                     node.node_type_str(),

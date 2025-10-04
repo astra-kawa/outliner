@@ -2,6 +2,7 @@ use crate::domain::DomainError;
 
 const RANK_LENGTH: usize = 12;
 
+#[derive(Debug)]
 pub struct LexoRank {
     rank: String,
     num: u64,
@@ -17,8 +18,12 @@ impl LexoRank {
 
         Ok(LexoRank {
             rank: rank.to_string(),
-            num: num,
+            num,
         })
+    }
+
+    pub fn rank_key_str(&self) -> &str {
+        &self.rank
     }
 }
 
