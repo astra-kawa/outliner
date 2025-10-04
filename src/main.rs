@@ -1,5 +1,5 @@
 use crate::{
-    domain::models::{NodeType, Source},
+    domain::models::{CreateNodeRequest, NodeType, Source},
     interfaces::{NodeRepository, SqliteRepository},
     services::node_service::{NodeService, Service},
 };
@@ -13,14 +13,14 @@ fn main() {
         repository: SqliteRepository::new_memory().unwrap(),
     };
 
-    let node1 = match service.repository.create_node(
+    let node1 = match service.create_node(CreateNodeRequest::new(
         None,
         None,
         NodeType::Standard,
         "New node 1",
         "astra",
         Source::User,
-    ) {
+    )) {
         Ok(node) => {
             println!("Created node: {node:?}");
             node
@@ -31,14 +31,14 @@ fn main() {
         }
     };
 
-    let node2 = match service.repository.create_node(
+    let node2 = match service.create_node(CreateNodeRequest::new(
         Some(node1.id),
         None,
         NodeType::Standard,
         "New node 2",
         "astra",
         Source::User,
-    ) {
+    )) {
         Ok(node) => {
             println!("Created node: {node:?}");
             node
@@ -49,14 +49,14 @@ fn main() {
         }
     };
 
-    match service.repository.create_node(
+    match service.create_node(CreateNodeRequest::new(
         Some(node1.id),
         Some(node2.id),
         NodeType::Standard,
         "New node 3",
         "astra",
         Source::User,
-    ) {
+    )) {
         Ok(node) => println!("Created node: {node:?}"),
         Err(err) => eprintln!("Error: {err}"),
     };

@@ -163,12 +163,12 @@ impl Node {
 }
 
 pub struct CreateNodeRequest {
-    parent_id: Option<Uuid>,
-    previous_id: Option<Uuid>,
-    node_type: NodeType,
-    text: String,
-    author: String,
-    source_type: Source,
+    pub parent_id: Option<Uuid>,
+    pub previous_id: Option<Uuid>,
+    pub node_type: NodeType,
+    pub text: String,
+    pub author: String,
+    pub source_type: Source,
 }
 
 impl CreateNodeRequest {
