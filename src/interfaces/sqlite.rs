@@ -34,27 +34,19 @@ impl SqliteRepository {
 
 impl NodeRepository for SqliteRepository {
     fn add_node(&self, node: &Node) -> Result<(), InterfaceError> {
-        let id = node.id.to_string();
-        let parent_id = node.parent_id.map(|id| id.to_string());
-        let previous_id = node.previous_id.map(|id| id.to_string());
-        let created_time = node.created_time.to_string();
-        let modified_time = node.modified_time.to_string();
-        let node_type = node.node_type.to_string();
-        let source = node.source_type.to_string();
-
         self.connection
             .execute(
                 "INSERT INTO outline (id, parent_id, previous_id, created_time, modified_time, node_type, text, author, source_type) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
                 rusqlite::params![
-                    id,
-                    parent_id,
-                    previous_id,
-                    created_time,
-                    modified_time,
-                    node_type,
-                    &node.text,
-                    &node.author,
-                    source,
+                    node.id_str(),
+                    node.parent_id_str(),
+                    node.previous_id_str(),
+                    node.created_time_str(),
+                    node.modified_time_str(),
+                    node.node_type_str(),
+                    node.text(),
+                    node.author(),
+                    node.source_type_str(),
                 ],
             )
             .map_err(|_| InterfaceError::NodeWrite)?;
@@ -81,9 +73,9 @@ impl NodeRepository for SqliteRepository {
             .execute(
                 "UPDATE outline SET text = ?1, modified_time = ?2 WHERE id = ?3",
                 (
-                    &updated_node.text,
-                    &updated_node.modified_time.to_string(),
-                    &updated_node.id.to_string(),
+                    updated_node.text(),
+                    updated_node.modified_time_str(),
+                    updated_node.id_str(),
                 ),
             )
             .map_err(|_| InterfaceError::NodeUpdate)?;

@@ -5,15 +5,15 @@ use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct Node {
-    pub id: Uuid,
-    pub parent_id: Option<Uuid>,
-    pub previous_id: Option<Uuid>,
-    pub created_time: Epoch,
-    pub modified_time: Epoch,
-    pub node_type: NodeType,
-    pub text: String,
-    pub author: String,
-    pub source_type: Source,
+    id: Uuid,
+    parent_id: Option<Uuid>,
+    previous_id: Option<Uuid>,
+    created_time: Epoch,
+    modified_time: Epoch,
+    node_type: NodeType,
+    text: String,
+    author: String,
+    source_type: Source,
 }
 
 #[derive(Debug, PartialEq)]
@@ -98,6 +98,46 @@ impl Node {
             author: request.author,
             source_type: request.source_type,
         })
+    }
+
+    pub fn id_str(&self) -> String {
+        self.id.to_string()
+    }
+
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+
+    pub fn parent_id_str(&self) -> Option<String> {
+        self.parent_id.map(|id| id.to_string())
+    }
+
+    pub fn previous_id_str(&self) -> Option<String> {
+        self.previous_id.map(|id| id.to_string())
+    }
+
+    pub fn created_time_str(&self) -> String {
+        self.created_time.to_string()
+    }
+
+    pub fn modified_time_str(&self) -> String {
+        self.modified_time.to_string()
+    }
+
+    pub fn node_type_str(&self) -> String {
+        self.node_type.to_string()
+    }
+
+    pub fn source_type_str(&self) -> String {
+        self.source_type.to_string()
+    }
+
+    pub fn text(&self) -> &str {
+        &self.text
+    }
+
+    pub fn author(&self) -> &str {
+        &self.author
     }
 
     pub fn from_raw_strs(
