@@ -7,7 +7,7 @@ use uuid::Uuid;
 pub struct Node {
     id: Uuid,
     parent_id: Option<Uuid>,
-    previous_id: Option<Uuid>,
+    rank_key: String,
     created_time: Epoch,
     modified_time: Epoch,
     node_type: NodeType,
@@ -90,7 +90,7 @@ impl Node {
         Ok(Node {
             id: Uuid::new_v4(),
             parent_id: request.parent_id,
-            previous_id: request.previous_id,
+            rank_key: request.rank_key,
             created_time: now,
             modified_time: now,
             node_type: request.node_type,
@@ -112,8 +112,8 @@ impl Node {
         self.parent_id.map(|id| id.to_string())
     }
 
-    pub fn previous_id_str(&self) -> Option<String> {
-        self.previous_id.map(|id| id.to_string())
+    pub fn rank_key(&self) -> String {
+        self.rank_key.to_string()
     }
 
     pub fn created_time_str(&self) -> String {
@@ -143,7 +143,7 @@ impl Node {
     pub fn from_raw_strs(
         id_str: String,
         parent_id_str: Option<String>,
-        previous_id_str: Option<String>,
+        rank_key: String,
         created_time_str: String,
         modified_time_str: String,
         node_type_str: String,
@@ -157,14 +157,6 @@ impl Node {
             Some(str) => match Uuid::parse_str(&str) {
                 Ok(id) => Some(id),
                 Err(_) => return Err(DomainError::FieldParseError("parent_id".into())),
-            },
-            None => None,
-        };
-
-        let previous_id = match previous_id_str {
-            Some(str) => match Uuid::parse_str(&str) {
-                Ok(id) => Some(id),
-                Err(_) => return Err(DomainError::FieldParseError("previous_id".into())),
             },
             None => None,
         };
@@ -184,7 +176,7 @@ impl Node {
         Ok(Node {
             id,
             parent_id,
-            previous_id,
+            rank_key,
             created_time,
             modified_time,
             node_type,
@@ -204,7 +196,7 @@ impl Node {
 
 pub struct CreateNodeRequest {
     pub parent_id: Option<Uuid>,
-    pub previous_id: Option<Uuid>,
+    pub rank_key: String,
     pub node_type: NodeType,
     pub text: String,
     pub author: String,
@@ -214,7 +206,7 @@ pub struct CreateNodeRequest {
 impl CreateNodeRequest {
     pub fn new(
         parent_id: Option<Uuid>,
-        previous_id: Option<Uuid>,
+        rank_key: &str,
         node_type: NodeType,
         text: &str,
         author: &str,
@@ -222,7 +214,7 @@ impl CreateNodeRequest {
     ) -> Self {
         CreateNodeRequest {
             parent_id,
-            previous_id,
+            rank_key: rank_key.into(),
             node_type,
             text: text.into(),
             author: author.into(),
