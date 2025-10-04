@@ -1,5 +1,5 @@
 use crate::{
-    domain::{Node, models::CreateNodeRequest},
+    domain::{Node, node::CreateNodeRequest},
     interfaces::NodeRepository,
     services::errors::ServiceError,
 };

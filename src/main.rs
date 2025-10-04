@@ -1,5 +1,5 @@
 use crate::{
-    domain::models::{CreateNodeRequest, NodeType, Source},
+    domain::node::{CreateNodeRequest, NodeType, Source},
     interfaces::{NodeRepository, SqliteRepository},
     services::node_service::{NodeService, Service},
 };
