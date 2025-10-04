@@ -9,5 +9,7 @@ pub trait NodeRepository {
 
     fn update_node(&self, node: &Node) -> Result<(), InterfaceError>;
 
+    fn delete_node(&self, node_id: &Uuid) -> Result<(), InterfaceError>;
+
     fn dump_nodes(&self) -> Result<Vec<Node>, InterfaceError>;
 }

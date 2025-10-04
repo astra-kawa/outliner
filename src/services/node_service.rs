@@ -8,6 +8,8 @@ pub trait NodeService {
     fn create_node(&self, request: CreateNodeRequest) -> Result<Node, ServiceError>;
 
     fn update_node(&self, node: &mut Node, new_text: &str) -> Result<(), ServiceError>;
+
+    fn delete_node(&self, node: Node) -> Result<(), ServiceError>;
 }
 
 pub struct Service<R>
@@ -36,6 +38,14 @@ where
 
         self.repository
             .update_node(node)
+            .map_err(|_| ServiceError::Other)?;
+
+        Ok(())
+    }
+
+    fn delete_node(&self, node: Node) -> Result<(), ServiceError> {
+        self.repository
+            .delete_node(&node.id())
             .map_err(|_| ServiceError::Other)?;
 
         Ok(())
