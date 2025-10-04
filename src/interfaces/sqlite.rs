@@ -1,19 +1,14 @@
-use super::{InterfaceError, NodeStore};
-use crate::domain::{
-    Node,
-    models::{NodeType, Source},
-};
-use hifitime::prelude::*;
+use super::{InterfaceError, NodeRepository};
+use crate::domain::Node;
 use rusqlite::{Connection, Error, Row};
-use std::str::FromStr;
 use uuid::Uuid;
 
-pub struct SqliteStore {
+pub struct SqliteRepository {
     connection: Connection,
 }
 
-impl SqliteStore {
-    pub fn new_memory() -> Result<SqliteStore, InterfaceError> {
+impl SqliteRepository {
+    pub fn new_memory() -> Result<SqliteRepository, InterfaceError> {
         let connection = Connection::open_in_memory().map_err(|_| InterfaceError::DbConnection)?;
 
         connection
@@ -33,49 +28,30 @@ impl SqliteStore {
             )
             .map_err(|_| InterfaceError::TableCreation)?;
 
-        Ok(SqliteStore { connection })
+        Ok(SqliteRepository { connection })
     }
 }
 
-impl NodeStore for SqliteStore {
-    fn create_node(
-        &self,
-        parent: Option<Uuid>,
-        previous: Option<Uuid>,
-        node_type: NodeType,
-        text: &str,
-        author: &str,
-        source: Source,
-    ) -> Result<Node, InterfaceError> {
-        let node = Node::new(parent, previous, node_type, text, author, source)
-            .map_err(|_| InterfaceError::NodeCreation)?;
-
-        let id = node.id.to_string();
-        let parent_id = node.parent_id.map(|id| id.to_string());
-        let previous_id = node.previous_id.map(|id| id.to_string());
-        let created_time = node.created_time.to_string();
-        let modified_time = node.modified_time.to_string();
-        let node_type = node.node_type.to_string();
-        let source = node.source_type.to_string();
-
+impl NodeRepository for SqliteRepository {
+    fn add_node(&self, node: &Node) -> Result<(), InterfaceError> {
         self.connection
             .execute(
                 "INSERT INTO outline (id, parent_id, previous_id, created_time, modified_time, node_type, text, author, source_type) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
                 rusqlite::params![
-                    id,
-                    parent_id,
-                    previous_id,
-                    created_time,
-                    modified_time,
-                    node_type,
-                    &node.text,
-                    &node.author,
-                    source,
+                    node.id_str(),
+                    node.parent_id_str(),
+                    node.previous_id_str(),
+                    node.created_time_str(),
+                    node.modified_time_str(),
+                    node.node_type_str(),
+                    node.text(),
+                    node.author(),
+                    node.source_type_str(),
                 ],
             )
             .map_err(|_| InterfaceError::NodeWrite)?;
 
-        Ok(node)
+        Ok(())
     }
 
     fn get_node(&self, node_id: &Uuid) -> Result<Node, InterfaceError> {
@@ -97,9 +73,9 @@ impl NodeStore for SqliteStore {
             .execute(
                 "UPDATE outline SET text = ?1, modified_time = ?2 WHERE id = ?3",
                 (
-                    &updated_node.text,
-                    &updated_node.modified_time.to_string(),
-                    &updated_node.id.to_string(),
+                    updated_node.text(),
+                    updated_node.modified_time_str(),
+                    updated_node.id_str(),
                 ),
             )
             .map_err(|_| InterfaceError::NodeUpdate)?;
@@ -131,32 +107,31 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
     let id_str: String = row
         .get(0)
         .map_err(|_| InterfaceError::FieldParseError("id".to_owned()))?;
-    let id =
-        Uuid::parse_str(&id_str).map_err(|_| InterfaceError::FieldParseError("id".to_owned()))?;
 
-    let parent_id = optional_uuid(row, 1)?;
-    let previous_id = optional_uuid(row, 2)?;
+    let parent_id_str: Option<String> = row
+        .get(1)
+        .map_err(|_| InterfaceError::FieldParseError("parent_id".to_owned()))?;
 
-    let created_str: String = row
+    let previous_id_str: Option<String> = row
+        .get(2)
+        .map_err(|_| InterfaceError::FieldParseError("previous_id".to_owned()))?;
+
+    let created_time_str: String = row
         .get(3)
         .map_err(|_| InterfaceError::FieldParseError("created_time".to_owned()))?;
-    let modified_str: String = row
+
+    let modified_time_str: String = row
         .get(4)
-        .map_err(|_| InterfaceError::FieldParseError("modified_time".to_owned()))?;
-    let created_time = Epoch::from_str(&created_str)
-        .map_err(|_| InterfaceError::FieldParseError("created_time".to_owned()))?;
-    let modified_time = Epoch::from_str(&modified_str)
         .map_err(|_| InterfaceError::FieldParseError("modified_time".to_owned()))?;
 
     let node_type_str: String = row
         .get(5)
         .map_err(|_| InterfaceError::FieldParseError("node_type".to_owned()))?;
-    let node_type = NodeType::from_str(&node_type_str)
-        .map_err(|_| InterfaceError::FieldParseError("node_type".to_owned()))?;
 
     let text: String = row
         .get(6)
         .map_err(|_| InterfaceError::FieldParseError("text".to_owned()))?;
+
     let author: String = row
         .get(7)
         .map_err(|_| InterfaceError::FieldParseError("author".to_owned()))?;
@@ -164,25 +139,17 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
     let source_str: String = row
         .get(8)
         .map_err(|_| InterfaceError::FieldParseError("source".to_owned()))?;
-    let source = Source::from_str(&source_str)
-        .map_err(|_| InterfaceError::FieldParseError("source".to_owned()))?;
 
-    Ok(Node {
-        id,
-        parent_id,
-        previous_id,
-        created_time,
-        modified_time,
-        node_type,
+    Node::from_raw_strs(
+        id_str,
+        parent_id_str,
+        previous_id_str,
+        created_time_str,
+        modified_time_str,
+        node_type_str,
         text,
         author,
-        source_type: source,
-    })
-}
-
-fn optional_uuid(row: &Row<'_>, index: usize) -> Result<Option<Uuid>, InterfaceError> {
-    let value: Option<String> = row.get(index).map_err(|_| InterfaceError::Other)?;
-    value
-        .map(|value| Uuid::parse_str(&value).map_err(|_| InterfaceError::Other))
-        .transpose()
+        source_str,
+    )
+    .map_err(InterfaceError::Domain)
 }

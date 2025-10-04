@@ -5,15 +5,15 @@ use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct Node {
-    pub id: Uuid,
-    pub parent_id: Option<Uuid>,
-    pub previous_id: Option<Uuid>,
-    pub created_time: Epoch,
-    pub modified_time: Epoch,
-    pub node_type: NodeType,
-    pub text: String,
-    pub author: String,
-    pub source_type: Source,
+    id: Uuid,
+    parent_id: Option<Uuid>,
+    previous_id: Option<Uuid>,
+    created_time: Epoch,
+    modified_time: Epoch,
+    node_type: NodeType,
+    text: String,
+    author: String,
+    source_type: Source,
 }
 
 #[derive(Debug, PartialEq)]
@@ -84,33 +84,149 @@ impl fmt::Display for NodeType {
 }
 
 impl Node {
-    pub fn new(
-        parent: Option<Uuid>,
-        previous: Option<Uuid>,
-        node_type: NodeType,
-        text: &str,
-        author: &str,
-        source_type: Source,
-    ) -> Result<Self, DomainError> {
+    pub fn new(request: CreateNodeRequest) -> Result<Self, DomainError> {
         let now = Epoch::now().map_err(|_| DomainError::InvalidDateTime)?;
 
         Ok(Node {
             id: Uuid::new_v4(),
-            parent_id: parent,
-            previous_id: previous,
+            parent_id: request.parent_id,
+            previous_id: request.previous_id,
             created_time: now,
             modified_time: now,
+            node_type: request.node_type,
+            text: request.text,
+            author: request.author,
+            source_type: request.source_type,
+        })
+    }
+
+    pub fn id_str(&self) -> String {
+        self.id.to_string()
+    }
+
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+
+    pub fn parent_id_str(&self) -> Option<String> {
+        self.parent_id.map(|id| id.to_string())
+    }
+
+    pub fn previous_id_str(&self) -> Option<String> {
+        self.previous_id.map(|id| id.to_string())
+    }
+
+    pub fn created_time_str(&self) -> String {
+        self.created_time.to_string()
+    }
+
+    pub fn modified_time_str(&self) -> String {
+        self.modified_time.to_string()
+    }
+
+    pub fn node_type_str(&self) -> String {
+        self.node_type.to_string()
+    }
+
+    pub fn source_type_str(&self) -> String {
+        self.source_type.to_string()
+    }
+
+    pub fn text(&self) -> &str {
+        &self.text
+    }
+
+    pub fn author(&self) -> &str {
+        &self.author
+    }
+
+    pub fn from_raw_strs(
+        id_str: String,
+        parent_id_str: Option<String>,
+        previous_id_str: Option<String>,
+        created_time_str: String,
+        modified_time_str: String,
+        node_type_str: String,
+        text: String,
+        author: String,
+        source_type_str: String,
+    ) -> Result<Self, DomainError> {
+        let id = Uuid::parse_str(&id_str).map_err(|_| DomainError::FieldParseError("id".into()))?;
+
+        let parent_id = match parent_id_str {
+            Some(str) => match Uuid::parse_str(&str) {
+                Ok(id) => Some(id),
+                Err(_) => return Err(DomainError::FieldParseError("parent_id".into())),
+            },
+            None => None,
+        };
+
+        let previous_id = match previous_id_str {
+            Some(str) => match Uuid::parse_str(&str) {
+                Ok(id) => Some(id),
+                Err(_) => return Err(DomainError::FieldParseError("previous_id".into())),
+            },
+            None => None,
+        };
+
+        let created_time = Epoch::from_str(&created_time_str)
+            .map_err(|_| DomainError::FieldParseError("created_time".into()))?;
+
+        let modified_time = Epoch::from_str(&modified_time_str)
+            .map_err(|_| DomainError::FieldParseError("modified_time".into()))?;
+
+        let node_type = NodeType::from_str(&node_type_str)
+            .map_err(|_| DomainError::FieldParseError("node_type".into()))?;
+
+        let source_type = Source::from_str(&source_type_str)
+            .map_err(|_| DomainError::FieldParseError("source".to_owned()))?;
+
+        Ok(Node {
+            id,
+            parent_id,
+            previous_id,
+            created_time,
+            modified_time,
             node_type,
-            text: text.into(),
-            author: author.into(),
+            text,
+            author,
             source_type,
         })
     }
 
-    pub fn update(mut self, text: impl Into<String>) -> Result<Self, DomainError> {
+    pub fn update(&mut self, text: impl Into<String>) -> Result<(), DomainError> {
         self.text = text.into();
         self.modified_time = Epoch::now().map_err(|_| DomainError::InvalidDateTime)?;
 
-        Ok(self)
+        Ok(())
+    }
+}
+
+pub struct CreateNodeRequest {
+    pub parent_id: Option<Uuid>,
+    pub previous_id: Option<Uuid>,
+    pub node_type: NodeType,
+    pub text: String,
+    pub author: String,
+    pub source_type: Source,
+}
+
+impl CreateNodeRequest {
+    pub fn new(
+        parent_id: Option<Uuid>,
+        previous_id: Option<Uuid>,
+        node_type: NodeType,
+        text: &str,
+        author: &str,
+        source_type: Source,
+    ) -> Self {
+        CreateNodeRequest {
+            parent_id,
+            previous_id,
+            node_type,
+            text: text.into(),
+            author: author.into(),
+            source_type,
+        }
     }
 }

@@ -1,22 +1,26 @@
 use crate::{
-    domain::models::{NodeType, Source},
-    interfaces::{NodeStore, SqliteStore},
+    domain::models::{CreateNodeRequest, NodeType, Source},
+    interfaces::{NodeRepository, SqliteRepository},
+    services::node_service::{NodeService, Service},
 };
 
 mod domain;
 mod interfaces;
+mod services;
 
 fn main() {
-    let store = SqliteStore::new_memory().unwrap();
+    let service = Service {
+        repository: SqliteRepository::new_memory().unwrap(),
+    };
 
-    let node1 = match store.create_node(
+    let node1 = match service.create_node(CreateNodeRequest::new(
         None,
         None,
         NodeType::Standard,
         "New node 1",
         "astra",
         Source::User,
-    ) {
+    )) {
         Ok(node) => {
             println!("Created node: {node:?}");
             node
@@ -27,14 +31,14 @@ fn main() {
         }
     };
 
-    let node2 = match store.create_node(
-        Some(node1.id),
+    let node2 = match service.create_node(CreateNodeRequest::new(
+        Some(node1.id()),
         None,
         NodeType::Standard,
         "New node 2",
         "astra",
         Source::User,
-    ) {
+    )) {
         Ok(node) => {
             println!("Created node: {node:?}");
             node
@@ -45,36 +49,37 @@ fn main() {
         }
     };
 
-    match store.create_node(
-        Some(node1.id),
-        Some(node2.id),
+    match service.create_node(CreateNodeRequest::new(
+        Some(node1.id()),
+        Some(node2.id()),
         NodeType::Standard,
         "New node 3",
         "astra",
         Source::User,
-    ) {
+    )) {
         Ok(node) => println!("Created node: {node:?}"),
         Err(err) => eprintln!("Error: {err}"),
     };
 
     println!();
-    let mut nodes = store.dump_nodes().unwrap();
+    let mut nodes = service.repository.dump_nodes().unwrap();
     for node in nodes.iter() {
         println!("Retrieved node: {node:?}")
     }
 
     println!();
-    let node1 = nodes.remove(0);
-    match store.get_node(&node1.id) {
+    let mut node1 = nodes.remove(0);
+    match service.repository.get_node(&node1.id()) {
         Ok(node) => println!("Got node: {node:?}"),
         Err(err) => eprintln!("Error: {err}"),
     };
 
     println!();
-    let node1 = node1.update("Updated node 1 with new text").unwrap();
-    let _ = store.update_node(&node1);
+    service
+        .update_node(&mut node1, "Updated node 1 with new text")
+        .unwrap();
 
-    match store.get_node(&node1.id) {
+    match service.repository.get_node(&node1.id()) {
         Ok(node) => println!("Got node: {node:?}"),
         Err(err) => eprintln!("Error: {err}"),
     };

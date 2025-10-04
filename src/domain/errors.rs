@@ -4,6 +4,6 @@ use thiserror::Error;
 pub enum DomainError {
     #[error("Invalid datetime string provided")]
     InvalidDateTime,
-    #[error("Other error encountered")]
-    Other,
+    #[error("Failed to parse supplied field: `{0}`")]
+    FieldParseError(String),
 }
