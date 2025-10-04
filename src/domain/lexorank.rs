@@ -10,14 +10,15 @@ pub struct LexoRank {
 
 impl LexoRank {
     pub fn new(rank: &str) -> Result<Self, DomainError> {
-        if rank.len() != RANK_LENGTH {
+        if rank.len() > RANK_LENGTH {
             return Err(DomainError::InvalidRankLength);
         }
 
-        let num = from_str(rank).map_err(|_| DomainError::InvalidRank)?;
+        let rank_str = format!("{rank:0>RANK_LENGTH$}");
+        let num = from_str(&rank_str).map_err(|_| DomainError::InvalidRank)?;
 
         Ok(LexoRank {
-            rank: rank.to_string(),
+            rank: rank_str,
             num,
         })
     }
