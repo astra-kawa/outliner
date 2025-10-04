@@ -49,7 +49,7 @@ fn main() {
         }
     };
 
-    match service.create_node(CreateNodeRequest::new(
+    let node3 = match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
         Some(node2.id()),
         NodeType::Standard,
@@ -57,12 +57,26 @@ fn main() {
         "astra",
         Source::User,
     )) {
-        Ok(node) => println!("Created node: {node:?}"),
-        Err(err) => eprintln!("Error: {err}"),
+        Ok(node) => {
+            println!("Created node: {node:?}");
+            node
+        }
+        Err(err) => {
+            eprintln!("Error: {err}");
+            return;
+        }
     };
 
     println!();
     let mut nodes = service.repository.dump_nodes().unwrap();
+    for node in nodes.iter() {
+        println!("Retrieved node: {node:?}")
+    }
+
+    println!();
+    service.delete_node(node3).unwrap();
+
+    nodes = service.repository.dump_nodes().unwrap();
     for node in nodes.iter() {
         println!("Retrieved node: {node:?}")
     }

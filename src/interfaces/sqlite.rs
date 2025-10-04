@@ -87,6 +87,19 @@ impl NodeRepository for SqliteRepository {
         Ok(())
     }
 
+    fn delete_node(&self, node_id: &Uuid) -> Result<(), InterfaceError> {
+        let delete_row_count = self
+            .connection
+            .execute("DELETE FROM outline WHERE id = ?1", (node_id.to_string(),))
+            .map_err(|_| InterfaceError::NodeDelete)?;
+
+        if delete_row_count == 0 {
+            return Err(InterfaceError::MissingNode);
+        }
+
+        Ok(())
+    }
+
     fn dump_nodes(&self) -> Result<Vec<Node>, InterfaceError> {
         let mut query = self
             .connection

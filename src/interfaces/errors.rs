@@ -22,6 +22,8 @@ pub enum InterfaceError {
     MissingNode,
     #[error("Error when parsing field: `{0}`")]
     FieldParseError(String),
+    #[error("Node deletion error")]
+    NodeDelete,
     #[error("Other error encountered")]
     Other,
     #[error("Domain Error: `{0}`")]
