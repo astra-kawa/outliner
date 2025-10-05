@@ -23,6 +23,14 @@ impl LexoRank {
         })
     }
 
+    pub fn from_num(num: u64) -> Self {
+        let rank_str = to_string_padded(num, RANK_LENGTH);
+        LexoRank {
+            rank: rank_str,
+            num,
+        }
+    }
+
     pub fn rank_key_str(&self) -> &str {
         &self.rank
     }
@@ -60,7 +68,7 @@ pub fn from_str(s: &str) -> Result<u64, ParseBase36Error> {
     Ok(acc)
 }
 
-pub fn to_string(mut n: u64) -> String {
+fn to_string(mut n: u64) -> String {
     if n == 0 {
         return "0".to_string();
     }
@@ -80,7 +88,7 @@ pub fn to_string(mut n: u64) -> String {
     String::from_utf8(buf[i..].to_vec()).unwrap()
 }
 
-pub fn to_string_padded(n: u64, width: usize) -> String {
+fn to_string_padded(n: u64, width: usize) -> String {
     let s = to_string(n);
     if s.len() >= width {
         s
@@ -92,4 +100,11 @@ pub fn to_string_padded(n: u64, width: usize) -> String {
         out.push_str(&s);
         out
     }
+}
+
+fn create_midpoint(a: &LexoRank, b: &LexoRank) -> LexoRank {
+    let difference = b.num - a.num;
+    let midpoint = a.num + difference / 2;
+
+    LexoRank::from_num(midpoint)
 }
