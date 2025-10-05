@@ -8,6 +8,4 @@ pub enum ServiceError {
     Domain(DomainError),
     #[error("Interface error encountered: {0}")]
     Interface(InterfaceError),
-    #[error("Other error encountered")]
-    Other,
 }

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::domain::DomainError;
 
 const RANK_LENGTH: usize = 12;

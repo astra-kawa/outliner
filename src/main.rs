@@ -28,10 +28,7 @@ fn main() {
         "astra",
         Source::User,
     )) {
-        Ok(node) => {
-            println!("Created node: {node:?}");
-            node
-        }
+        Ok(node) => node,
         Err(err) => {
             eprintln!("Error: {err}");
             return;
@@ -46,10 +43,7 @@ fn main() {
         "astra",
         Source::User,
     )) {
-        Ok(node) => {
-            println!("Created node: {node:?}");
-            node
-        }
+        Ok(node) => node,
         Err(err) => {
             eprintln!("Error: {err}");
             return;
@@ -64,10 +58,7 @@ fn main() {
         "astra",
         Source::User,
     )) {
-        Ok(node) => {
-            println!("Created node: {node:?}");
-            node
-        }
+        Ok(node) => node,
         Err(err) => {
             eprintln!("Error: {err}");
             return;

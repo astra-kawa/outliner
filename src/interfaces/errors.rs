@@ -10,8 +10,6 @@ pub enum InterfaceError {
     TableCreation,
     #[error("Invalid query error")]
     InvalidQuery,
-    #[error("Node creation error")]
-    NodeCreation,
     #[error("Node write error")]
     NodeWrite,
     #[error("Node update error")]

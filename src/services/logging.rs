@@ -1,4 +1,8 @@
-pub trait LoggingService {}
+use crate::services::errors::ServiceError;
+
+pub trait LoggingService {
+    fn write_log(&self, message: String) -> Result<(), ServiceError>;
+}
 
 pub struct TerminalLogging {}
 
@@ -8,4 +12,10 @@ impl TerminalLogging {
     }
 }
 
-impl LoggingService for TerminalLogging {}
+impl LoggingService for TerminalLogging {
+    fn write_log(&self, message: String) -> Result<(), ServiceError> {
+        println!("{message}");
+
+        Ok(())
+    }
+}

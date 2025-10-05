@@ -1,3 +1,5 @@
+use hifitime::Epoch;
+
 use crate::{
     domain::{Node, node::CreateNodeRequest},
     interfaces::NodeRepository,
@@ -33,6 +35,12 @@ where
             .add_node(&node)
             .map_err(ServiceError::Interface)?;
 
+        self.logger.write_log(format!(
+            "{} | Created node: {}",
+            node.created_time_str(),
+            node.id_str()
+        ))?;
+
         Ok(node)
     }
 
@@ -43,6 +51,12 @@ where
             .update_node(node)
             .map_err(ServiceError::Interface)?;
 
+        self.logger.write_log(format!(
+            "{} | Updated node: {}",
+            node.modified_time_str(),
+            node.id_str()
+        ))?;
+
         Ok(())
     }
 
@@ -52,6 +66,12 @@ where
         self.repository
             .delete_node(&node.id())
             .map_err(ServiceError::Interface)?;
+
+        self.logger.write_log(format!(
+            "{} | Deleted node: {}",
+            Epoch::now().unwrap(),
+            node.id_str()
+        ))?;
 
         Ok(())
     }
