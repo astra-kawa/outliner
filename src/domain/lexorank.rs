@@ -14,7 +14,7 @@ impl LexoRank {
             return Err(DomainError::InvalidRankLength);
         }
 
-        let rank_str = format!("{rank:0>RANK_LENGTH$}");
+        let rank_str = format!("{:0>RANK_LENGTH$}", rank.to_ascii_lowercase());
         let num = from_str(&rank_str).map_err(|_| DomainError::InvalidRank)?;
 
         Ok(LexoRank {
@@ -48,13 +48,12 @@ fn val_of(c: char) -> Option<u8> {
     match c {
         '0'..='9' => Some((c as u8) - b'0'),
         'a'..='z' => Some(10 + (c as u8 - b'a')),
-        'A'..='Z' => Some(10 + (c as u8 - b'A')),
         _ => None,
     }
 }
 
 pub fn from_str(s: &str) -> Result<u64, ParseBase36Error> {
-    let s = s.trim();
+    let s = s.trim().to_ascii_lowercase();
     if s.is_empty() {
         return Err(ParseBase36Error::Empty);
     }
