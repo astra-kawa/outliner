@@ -1,7 +1,7 @@
 use crate::{
     domain::{Node, node::CreateNodeRequest},
     interfaces::NodeRepository,
-    services::errors::ServiceError,
+    services::{errors::ServiceError, logging::LoggingService},
 };
 
 pub trait NodeService {
@@ -12,16 +12,19 @@ pub trait NodeService {
     fn delete_node(&self, node: Node) -> Result<(), ServiceError>;
 }
 
-pub struct Service<R>
+pub struct Service<R, L>
 where
     R: NodeRepository,
+    L: LoggingService,
 {
     pub repository: R,
+    pub logger: L,
 }
 
-impl<R> NodeService for Service<R>
+impl<R, L> NodeService for Service<R, L>
 where
     R: NodeRepository,
+    L: LoggingService,
 {
     fn create_node(&self, request: CreateNodeRequest) -> Result<Node, ServiceError> {
         let node = Node::new(request).map_err(ServiceError::Domain)?;

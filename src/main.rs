@@ -4,7 +4,10 @@ use crate::{
         node::{CreateNodeRequest, NodeType, Source},
     },
     interfaces::{NodeRepository, SqliteRepository},
-    services::node_service::{NodeService, Service},
+    services::{
+        logging::TerminalLogging,
+        node_service::{NodeService, Service},
+    },
 };
 
 mod domain;
@@ -14,6 +17,7 @@ mod services;
 fn main() {
     let service = Service {
         repository: SqliteRepository::new_memory().unwrap(),
+        logger: TerminalLogging::new(),
     };
 
     let node1 = match service.create_node(CreateNodeRequest::new(
