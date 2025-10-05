@@ -92,8 +92,6 @@ pub fn create_parent_children_map(nodes: &Vec<Node>) -> HashMap<Uuid, Vec<(Uuid,
             children_rank_ids.sort_by(|a, b| a.1.cmp(&b.1));
         }
 
-        //let children_ids = children_rank_ids.into_iter().map(|(_, id)| id).collect();
-
         children_by_parent.insert(parent_node.id(), children_rank_ids);
     }
 

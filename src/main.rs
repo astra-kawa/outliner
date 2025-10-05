@@ -62,6 +62,39 @@ fn main() {
         }
     };
 
+    service
+        .create_node(CreateNodeRequest::new(
+            Some(node1.id()),
+            &to_string_padded(3, 12),
+            NodeType::Standard,
+            "New node 4",
+            "astra",
+            Source::User,
+        ))
+        .unwrap();
+
+    service
+        .create_node(CreateNodeRequest::new(
+            Some(node1.id()),
+            &to_string_padded(4, 12),
+            NodeType::Standard,
+            "New node 5",
+            "astra",
+            Source::User,
+        ))
+        .unwrap();
+
+    service
+        .create_node(CreateNodeRequest::new(
+            Some(node1.id()),
+            &to_string_padded(5, 12),
+            NodeType::Standard,
+            "New node 6",
+            "astra",
+            Source::User,
+        ))
+        .unwrap();
+
     let graph_service = GraphService::new(service);
 
     for element in graph_service.node_graph.graph {
