@@ -4,7 +4,7 @@ use crate::{
         node::{CreateNodeRequest, NodeType, Source},
     },
     interfaces::{NodeRepository, SqliteRepository},
-    services::node_service::{NodeService, Service},
+    services::node_service::NodeService,
 };
 
 mod domain;
@@ -12,7 +12,7 @@ mod interfaces;
 mod services;
 
 fn main() {
-    let service = Service {
+    let service = NodeService {
         repository: SqliteRepository::new_memory().unwrap(),
     };
 
