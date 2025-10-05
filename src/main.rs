@@ -3,8 +3,8 @@ use crate::{
         lexorank::to_string_padded,
         node::{CreateNodeRequest, NodeType, Source},
     },
-    interfaces::{NodeRepository, SqliteRepository},
-    services::{graph_service::GraphService, node_service::NodeService},
+    interfaces::SqliteRepository,
+    services::{graph_service::GraphService, logging::TerminalLogging, node_service::NodeService},
 };
 
 mod domain;
@@ -14,6 +14,7 @@ mod services;
 fn main() {
     let service = NodeService {
         repository: SqliteRepository::new_memory().unwrap(),
+        logger: TerminalLogging::new(),
     };
 
     let node1 = match service.create_node(CreateNodeRequest::new(
@@ -24,10 +25,7 @@ fn main() {
         "astra",
         Source::User,
     )) {
-        Ok(node) => {
-            println!("Created node: {node:?}");
-            node
-        }
+        Ok(node) => node,
         Err(err) => {
             eprintln!("Error: {err}");
             return;
@@ -42,10 +40,7 @@ fn main() {
         "astra",
         Source::User,
     )) {
-        Ok(node) => {
-            println!("Created node: {node:?}");
-            node
-        }
+        Ok(node) => node,
         Err(err) => {
             eprintln!("Error: {err}");
             return;
@@ -60,10 +55,7 @@ fn main() {
         "astra",
         Source::User,
     )) {
-        Ok(node) => {
-            println!("Created node: {node:?}");
-            node
-        }
+        Ok(node) => node,
         Err(err) => {
             eprintln!("Error: {err}");
             return;
