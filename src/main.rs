@@ -1,5 +1,8 @@
 use crate::{
-    domain::models::{CreateNodeRequest, NodeType, Source},
+    domain::{
+        lexorank::to_string_padded,
+        node::{CreateNodeRequest, NodeType, Source},
+    },
     interfaces::{NodeRepository, SqliteRepository},
     services::node_service::{NodeService, Service},
 };
@@ -15,7 +18,7 @@ fn main() {
 
     let node1 = match service.create_node(CreateNodeRequest::new(
         None,
-        None,
+        &to_string_padded(100, 12),
         NodeType::Standard,
         "New node 1",
         "astra",
@@ -31,9 +34,9 @@ fn main() {
         }
     };
 
-    let node2 = match service.create_node(CreateNodeRequest::new(
+    match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
-        None,
+        &to_string_padded(100, 12),
         NodeType::Standard,
         "New node 2",
         "astra",
@@ -51,7 +54,7 @@ fn main() {
 
     let node3 = match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
-        Some(node2.id()),
+        &to_string_padded(500, 12),
         NodeType::Standard,
         "New node 3",
         "astra",

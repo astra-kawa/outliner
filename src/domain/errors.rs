@@ -6,4 +6,8 @@ pub enum DomainError {
     InvalidDateTime,
     #[error("Failed to parse supplied field: `{0}`")]
     FieldParseError(String),
+    #[error("Invalid rank length")]
+    InvalidRankLength,
+    #[error("Invalid rank")]
+    InvalidRank,
 }

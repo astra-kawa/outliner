@@ -1,5 +1,5 @@
 use crate::{
-    domain::{Node, models::CreateNodeRequest},
+    domain::{Node, node::CreateNodeRequest},
     interfaces::NodeRepository,
     services::errors::ServiceError,
 };
@@ -24,21 +24,21 @@ where
     R: NodeRepository,
 {
     fn create_node(&self, request: CreateNodeRequest) -> Result<Node, ServiceError> {
-        let node = Node::new(request).map_err(|_| ServiceError::Other)?;
+        let node = Node::new(request).map_err(ServiceError::Domain)?;
 
         self.repository
             .add_node(&node)
-            .map_err(|_| ServiceError::Other)?;
+            .map_err(ServiceError::Interface)?;
 
         Ok(node)
     }
 
     fn update_node(&self, node: &mut Node, new_text: &str) -> Result<(), ServiceError> {
-        node.update(new_text).map_err(|_| ServiceError::Other)?;
+        node.update(new_text).map_err(ServiceError::Domain)?;
 
         self.repository
             .update_node(node)
-            .map_err(|_| ServiceError::Other)?;
+            .map_err(ServiceError::Interface)?;
 
         Ok(())
     }
@@ -48,7 +48,7 @@ where
         // additionally, if deleted node has a sibling, update the next node's previous_id
         self.repository
             .delete_node(&node.id())
-            .map_err(|_| ServiceError::Other)?;
+            .map_err(ServiceError::Interface)?;
 
         Ok(())
     }
