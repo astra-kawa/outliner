@@ -4,7 +4,7 @@ use crate::{
         node::{CreateNodeRequest, NodeType, Source},
     },
     interfaces::{NodeRepository, SqliteRepository},
-    services::node_service::NodeService,
+    services::{graph_service::GraphService, node_service::NodeService},
 };
 
 mod domain;
@@ -52,7 +52,7 @@ fn main() {
         }
     };
 
-    let node3 = match service.create_node(CreateNodeRequest::new(
+    match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
         &to_string_padded(500, 12),
         NodeType::Standard,
@@ -70,34 +70,36 @@ fn main() {
         }
     };
 
-    println!();
-    let mut nodes = service.repository.dump_nodes().unwrap();
-    for node in nodes.iter() {
-        println!("Retrieved node: {node:?}")
-    }
+    // println!();
+    // let mut nodes = service.repository.dump_nodes().unwrap();
+    // for node in nodes.iter() {
+    //     println!("Retrieved node: {node:?}")
+    // }
 
-    println!();
-    service.delete_node(node3).unwrap();
+    // println!();
+    // service.delete_node(node3).unwrap();
 
-    nodes = service.repository.dump_nodes().unwrap();
-    for node in nodes.iter() {
-        println!("Retrieved node: {node:?}")
-    }
+    // nodes = service.repository.dump_nodes().unwrap();
+    // for node in nodes.iter() {
+    //     println!("Retrieved node: {node:?}")
+    // }
 
-    println!();
-    let mut node1 = nodes.remove(0);
-    match service.repository.get_node(&node1.id()) {
-        Ok(node) => println!("Got node: {node:?}"),
-        Err(err) => eprintln!("Error: {err}"),
-    };
+    // println!();
+    // let mut node1 = nodes.remove(0);
+    // match service.repository.get_node(&node1.id()) {
+    //     Ok(node) => println!("Got node: {node:?}"),
+    //     Err(err) => eprintln!("Error: {err}"),
+    // };
 
-    println!();
-    service
-        .update_node(&mut node1, "Updated node 1 with new text")
-        .unwrap();
+    // println!();
+    // service
+    //     .update_node(&mut node1, "Updated node 1 with new text")
+    //     .unwrap();
 
-    match service.repository.get_node(&node1.id()) {
-        Ok(node) => println!("Got node: {node:?}"),
-        Err(err) => eprintln!("Error: {err}"),
-    };
+    // match service.repository.get_node(&node1.id()) {
+    //     Ok(node) => println!("Got node: {node:?}"),
+    //     Err(err) => eprintln!("Error: {err}"),
+    // };
+
+    let graph = GraphService::new(service);
 }

@@ -50,4 +50,10 @@ where
 
         Ok(())
     }
+
+    pub fn dump_nodes(&self) -> Result<Vec<Node>, ServiceError> {
+        self.repository
+            .dump_nodes()
+            .map_err(ServiceError::Interface)
+    }
 }
