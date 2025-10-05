@@ -5,11 +5,11 @@ use crate::domain::Node;
 use uuid::Uuid;
 
 #[derive(Debug)]
-struct GraphElement {
+pub struct GraphElement {
     pub id: Uuid,
     pub parent_id: Option<Uuid>,
     pub depth: usize,
-    pub children: Vec<Self>,
+    pub children: Vec<GraphElement>,
 }
 
 pub struct NodeGraph {

@@ -9,8 +9,8 @@ where
     R: NodeRepository,
     L: LoggingService,
 {
-    graph: NodeGraph,
-    node_service: NodeService<R, L>,
+    pub node_graph: NodeGraph,
+    pub node_service: NodeService<R, L>,
 }
 
 impl<R, L> GraphService<R, L>
@@ -23,7 +23,7 @@ where
         let graph = NodeGraph::new(nodes);
 
         Self {
-            graph,
+            node_graph: graph,
             node_service,
         }
     }

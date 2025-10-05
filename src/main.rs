@@ -93,5 +93,9 @@ fn main() {
     //     Err(err) => eprintln!("Error: {err}"),
     // };
 
-    let graph = GraphService::new(service);
+    let graph_service = GraphService::new(service);
+
+    for element in graph_service.node_graph.graph {
+        println!("{element:?}");
+    }
 }
