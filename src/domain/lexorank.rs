@@ -87,7 +87,7 @@ fn to_string(mut n: u64) -> String {
     String::from_utf8(buf[i..].to_vec()).unwrap()
 }
 
-fn to_string_padded(n: u64, width: usize) -> String {
+pub fn to_string_padded(n: u64, width: usize) -> String {
     let s = to_string(n);
     if s.len() >= width {
         s
