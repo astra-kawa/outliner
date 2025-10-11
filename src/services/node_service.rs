@@ -6,12 +6,6 @@ use crate::{
     services::{errors::ServiceError, logging::LoggingService},
 };
 
-// pub trait NodeService {
-//     fn create_node(&self, request: CreateNodeRequest) -> Result<Node, ServiceError>;
-//     fn update_node(&self, node: &mut Node, new_text: &str) -> Result<(), ServiceError>;
-//     fn delete_node(&self, node: Node) -> Result<(), ServiceError>;
-// }
-
 pub struct NodeService<R, L>
 where
     R: NodeRepository,
