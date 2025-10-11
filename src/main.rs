@@ -95,6 +95,8 @@ fn main() {
     let graph_service = GraphService::new(service).unwrap();
 
     for element in graph_service.node_graph.graph {
-        println!("{element:?}");
+        for node in element.children {
+            println!("{node:?}");
+        }
     }
 }
