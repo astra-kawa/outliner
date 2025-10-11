@@ -6,3 +6,6 @@ pub use errors::DomainError;
 
 pub mod lexorank;
 pub use lexorank::LexoRank;
+
+pub mod node_graph;
+pub use node_graph::NodeGraph;

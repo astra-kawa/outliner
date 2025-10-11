@@ -3,11 +3,8 @@ use crate::{
         lexorank::to_string_padded,
         node::{CreateNodeRequest, NodeType, Source},
     },
-    interfaces::{NodeRepository, SqliteRepository},
-    services::{
-        logging::TerminalLogging,
-        node_service::{NodeService, Service},
-    },
+    interfaces::SqliteRepository,
+    services::{graph_service::GraphService, logging::TerminalLogging, node_service::NodeService},
 };
 
 mod domain;
@@ -15,14 +12,14 @@ mod interfaces;
 mod services;
 
 fn main() {
-    let service = Service {
+    let service = NodeService {
         repository: SqliteRepository::new_memory().unwrap(),
         logger: TerminalLogging::new(),
     };
 
     let node1 = match service.create_node(CreateNodeRequest::new(
         None,
-        &to_string_padded(100, 12),
+        &to_string_padded(1, 12),
         NodeType::Standard,
         "New node 1",
         "astra",
@@ -37,7 +34,7 @@ fn main() {
 
     match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
-        &to_string_padded(100, 12),
+        &to_string_padded(1, 12),
         NodeType::Standard,
         "New node 2",
         "astra",
@@ -50,9 +47,9 @@ fn main() {
         }
     };
 
-    let node3 = match service.create_node(CreateNodeRequest::new(
+    match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
-        &to_string_padded(500, 12),
+        &to_string_padded(2, 12),
         NodeType::Standard,
         "New node 3",
         "astra",
@@ -65,34 +62,48 @@ fn main() {
         }
     };
 
-    println!();
-    let mut nodes = service.repository.dump_nodes().unwrap();
-    for node in nodes.iter() {
-        println!("Retrieved node: {node:?}")
-    }
-
-    println!();
-    service.delete_node(node3).unwrap();
-
-    nodes = service.repository.dump_nodes().unwrap();
-    for node in nodes.iter() {
-        println!("Retrieved node: {node:?}")
-    }
-
-    println!();
-    let mut node1 = nodes.remove(0);
-    match service.repository.get_node(&node1.id()) {
-        Ok(node) => println!("Got node: {node:?}"),
-        Err(err) => eprintln!("Error: {err}"),
-    };
-
-    println!();
     service
-        .update_node(&mut node1, "Updated node 1 with new text")
+        .create_node(CreateNodeRequest::new(
+            Some(node1.id()),
+            &to_string_padded(3, 12),
+            NodeType::Standard,
+            "New node 4",
+            "astra",
+            Source::User,
+        ))
         .unwrap();
 
-    match service.repository.get_node(&node1.id()) {
-        Ok(node) => println!("Got node: {node:?}"),
-        Err(err) => eprintln!("Error: {err}"),
+    service
+        .create_node(CreateNodeRequest::new(
+            Some(node1.id()),
+            &to_string_padded(4, 12),
+            NodeType::Standard,
+            "New node 5",
+            "astra",
+            Source::User,
+        ))
+        .unwrap();
+
+    service
+        .create_node(CreateNodeRequest::new(
+            Some(node1.id()),
+            &to_string_padded(5, 12),
+            NodeType::Standard,
+            "New node 6",
+            "astra",
+            Source::User,
+        ))
+        .unwrap();
+
+    let graph_service = match GraphService::new(service) {
+        Ok(service) => service,
+        Err(err) => {
+            eprintln!("Error: {err}");
+            return;
+        }
     };
+
+    for element in graph_service.node_graph.graph {
+        println!("{element:?}");
+    }
 }

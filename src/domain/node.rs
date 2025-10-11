@@ -113,6 +113,10 @@ impl Node {
         self.parent_id.map(|id| id.to_string())
     }
 
+    pub fn parent_id(&self) -> Option<Uuid> {
+        self.parent_id
+    }
+
     pub fn rank_key_str(&self) -> String {
         self.rank_key.rank_key_str().to_string()
     }
