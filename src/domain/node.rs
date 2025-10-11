@@ -1,4 +1,4 @@
-use crate::domain::{DomainError, LexoRank};
+use crate::domain::DomainError;
 use hifitime::Epoch;
 use std::{fmt, str::FromStr};
 use uuid::Uuid;
@@ -7,7 +7,7 @@ use uuid::Uuid;
 pub struct Node {
     id: Uuid,
     parent_id: Option<Uuid>,
-    rank_key: LexoRank,
+    rank: u64,
     created_time: Epoch,
     modified_time: Epoch,
     node_type: NodeType,
@@ -86,12 +86,11 @@ impl fmt::Display for NodeType {
 impl Node {
     pub fn new(request: CreateNodeRequest) -> Result<Self, DomainError> {
         let now = Epoch::now().map_err(|_| DomainError::InvalidDateTime)?;
-        let rank_key = LexoRank::new(&request.rank_key)?;
 
         Ok(Node {
             id: Uuid::new_v4(),
             parent_id: request.parent_id,
-            rank_key,
+            rank: request.rank,
             created_time: now,
             modified_time: now,
             node_type: request.node_type,
@@ -113,8 +112,8 @@ impl Node {
         self.parent_id.map(|id| id.to_string())
     }
 
-    pub fn rank_key_str(&self) -> String {
-        self.rank_key.rank_key_str().to_string()
+    pub fn rank(&self) -> u64 {
+        self.rank
     }
 
     pub fn created_time_str(&self) -> String {
@@ -144,7 +143,7 @@ impl Node {
     pub fn from_raw_strs(
         id_str: String,
         parent_id_str: Option<String>,
-        rank_key: String,
+        rank_str: String,
         created_time_str: String,
         modified_time_str: String,
         node_type_str: String,
@@ -162,7 +161,9 @@ impl Node {
             None => None,
         };
 
-        let rank_key = LexoRank::new(&rank_key)?;
+        let rank: u64 = rank_str
+            .parse()
+            .map_err(|_| DomainError::FieldParseError("rank".into()))?;
 
         let created_time = Epoch::from_str(&created_time_str)
             .map_err(|_| DomainError::FieldParseError("created_time".into()))?;
@@ -179,7 +180,7 @@ impl Node {
         Ok(Node {
             id,
             parent_id,
-            rank_key,
+            rank,
             created_time,
             modified_time,
             node_type,
@@ -199,7 +200,7 @@ impl Node {
 
 pub struct CreateNodeRequest {
     pub parent_id: Option<Uuid>,
-    pub rank_key: String,
+    pub rank: u64,
     pub node_type: NodeType,
     pub text: String,
     pub author: String,
@@ -209,7 +210,7 @@ pub struct CreateNodeRequest {
 impl CreateNodeRequest {
     pub fn new(
         parent_id: Option<Uuid>,
-        rank_key: &str,
+        rank: u64,
         node_type: NodeType,
         text: &str,
         author: &str,
@@ -217,7 +218,7 @@ impl CreateNodeRequest {
     ) -> Self {
         CreateNodeRequest {
             parent_id,
-            rank_key: rank_key.into(),
+            rank,
             node_type,
             text: text.into(),
             author: author.into(),

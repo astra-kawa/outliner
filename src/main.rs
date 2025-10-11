@@ -1,8 +1,5 @@
 use crate::{
-    domain::{
-        lexorank::to_string_padded,
-        node::{CreateNodeRequest, NodeType, Source},
-    },
+    domain::node::{CreateNodeRequest, NodeType, Source},
     interfaces::{NodeRepository, SqliteRepository},
     services::{
         logging::TerminalLogging,
@@ -22,7 +19,7 @@ fn main() {
 
     let node1 = match service.create_node(CreateNodeRequest::new(
         None,
-        &to_string_padded(100, 12),
+        100,
         NodeType::Standard,
         "New node 1",
         "astra",
@@ -37,7 +34,7 @@ fn main() {
 
     match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
-        &to_string_padded(100, 12),
+        100,
         NodeType::Standard,
         "New node 2",
         "astra",
@@ -52,7 +49,7 @@ fn main() {
 
     let node3 = match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
-        &to_string_padded(500, 12),
+        200,
         NodeType::Standard,
         "New node 3",
         "astra",
@@ -66,7 +63,13 @@ fn main() {
     };
 
     println!();
-    let mut nodes = service.repository.dump_nodes().unwrap();
+    let mut nodes = match service.repository.dump_nodes() {
+        Ok(nodes) => nodes,
+        Err(err) => {
+            eprintln!("Error: {err}");
+            return;
+        }
+    };
     for node in nodes.iter() {
         println!("Retrieved node: {node:?}")
     }
