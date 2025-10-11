@@ -95,7 +95,13 @@ fn main() {
         ))
         .unwrap();
 
-    let graph_service = GraphService::new(service);
+    let graph_service = match GraphService::new(service) {
+        Ok(service) => service,
+        Err(err) => {
+            eprintln!("Error: {err}");
+            return;
+        }
+    };
 
     for element in graph_service.node_graph.graph {
         println!("{element:?}");

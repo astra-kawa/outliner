@@ -1,7 +1,7 @@
 use crate::{
-    domain::NodeGraph,
+    domain::{DomainError, NodeGraph},
     interfaces::NodeRepository,
-    services::{logging::LoggingService, node_service::NodeService},
+    services::{errors::ServiceError, logging::LoggingService, node_service::NodeService},
 };
 
 pub struct GraphService<R, L>
@@ -18,13 +18,13 @@ where
     R: NodeRepository,
     L: LoggingService,
 {
-    pub fn new(node_service: NodeService<R, L>) -> Self {
-        let nodes = node_service.dump_nodes().unwrap();
+    pub fn new(node_service: NodeService<R, L>) -> Result<GraphService<R, L>, ServiceError> {
+        let nodes = node_service.dump_nodes()?;
         let graph = NodeGraph::new(nodes);
 
-        Self {
+        Ok(Self {
             node_graph: graph,
             node_service,
-        }
+        })
     }
 }
