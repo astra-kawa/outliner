@@ -116,6 +116,10 @@ impl Node {
         self.rank
     }
 
+    pub fn parent_id(&self) -> Option<Uuid> {
+        self.parent_id
+    }
+
     pub fn created_time_str(&self) -> String {
         self.created_time.to_string()
     }
