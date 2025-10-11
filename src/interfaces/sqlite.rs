@@ -125,7 +125,7 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
         .get(1)
         .map_err(|_| InterfaceError::FieldParseError("parent_id".to_owned()))?;
 
-    let rank_str: String = row
+    let rank: u64 = row
         .get(2)
         .map_err(|_| InterfaceError::FieldParseError("rank".to_owned()))?;
 
@@ -156,7 +156,7 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
     Node::from_raw_strs(
         id_str,
         parent_id_str,
-        rank_str,
+        rank,
         created_time_str,
         modified_time_str,
         node_type_str,

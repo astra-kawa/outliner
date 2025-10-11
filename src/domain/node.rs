@@ -147,7 +147,7 @@ impl Node {
     pub fn from_raw_strs(
         id_str: String,
         parent_id_str: Option<String>,
-        rank_str: String,
+        rank: u64,
         created_time_str: String,
         modified_time_str: String,
         node_type_str: String,
@@ -164,10 +164,6 @@ impl Node {
             },
             None => None,
         };
-
-        let rank: u64 = rank_str
-            .parse()
-            .map_err(|_| DomainError::FieldParseError("rank".into()))?;
 
         let created_time = Epoch::from_str(&created_time_str)
             .map_err(|_| DomainError::FieldParseError("created_time".into()))?;
