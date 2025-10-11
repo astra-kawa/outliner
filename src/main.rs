@@ -1,8 +1,5 @@
 use crate::{
-    domain::{
-        lexorank::to_string_padded,
-        node::{CreateNodeRequest, NodeType, Source},
-    },
+    domain::node::{CreateNodeRequest, NodeType, Source},
     interfaces::SqliteRepository,
     services::{graph_service::GraphService, logging::TerminalLogging, node_service::NodeService},
 };
@@ -19,7 +16,7 @@ fn main() {
 
     let node1 = match service.create_node(CreateNodeRequest::new(
         None,
-        &to_string_padded(1, 12),
+        100,
         NodeType::Standard,
         "New node 1",
         "astra",
@@ -34,7 +31,7 @@ fn main() {
 
     match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
-        &to_string_padded(1, 12),
+        100,
         NodeType::Standard,
         "New node 2",
         "astra",
@@ -49,7 +46,7 @@ fn main() {
 
     match service.create_node(CreateNodeRequest::new(
         Some(node1.id()),
-        &to_string_padded(2, 12),
+        200,
         NodeType::Standard,
         "New node 3",
         "astra",
@@ -65,7 +62,7 @@ fn main() {
     service
         .create_node(CreateNodeRequest::new(
             Some(node1.id()),
-            &to_string_padded(3, 12),
+            300,
             NodeType::Standard,
             "New node 4",
             "astra",
@@ -76,7 +73,7 @@ fn main() {
     service
         .create_node(CreateNodeRequest::new(
             Some(node1.id()),
-            &to_string_padded(4, 12),
+            400,
             NodeType::Standard,
             "New node 5",
             "astra",
@@ -87,7 +84,7 @@ fn main() {
     service
         .create_node(CreateNodeRequest::new(
             Some(node1.id()),
-            &to_string_padded(5, 12),
+            500,
             NodeType::Standard,
             "New node 6",
             "astra",
@@ -95,15 +92,11 @@ fn main() {
         ))
         .unwrap();
 
-    let graph_service = match GraphService::new(service) {
-        Ok(service) => service,
-        Err(err) => {
-            eprintln!("Error: {err}");
-            return;
-        }
-    };
+    let graph_service = GraphService::new(service).unwrap();
 
     for element in graph_service.node_graph.graph {
-        println!("{element:?}");
+        for node in element.children {
+            println!("{node:?}");
+        }
     }
 }

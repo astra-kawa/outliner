@@ -16,7 +16,7 @@ impl SqliteRepository {
                 "CREATE TABLE outline (
                 id            TEXT PRIMARY KEY,
                 parent_id     TEXT,
-                rank_key      TEXT,
+                rank          INTEGER,
                 created_time  TEXT,
                 modified_time TEXT,
                 node_type     TEXT,
@@ -36,11 +36,11 @@ impl NodeRepository for SqliteRepository {
     fn add_node(&self, node: &Node) -> Result<(), InterfaceError> {
         self.connection
             .execute(
-                "INSERT INTO outline (id, parent_id, rank_key, created_time, modified_time, node_type, text, author, source_type) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+                "INSERT INTO outline (id, parent_id, rank, created_time, modified_time, node_type, text, author, source_type) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
                 rusqlite::params![
                     node.id_str(),
                     node.parent_id_str(),
-                    node.rank_key_str(),
+                    node.rank(),
                     node.created_time_str(),
                     node.modified_time_str(),
                     node.node_type_str(),
@@ -125,9 +125,9 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
         .get(1)
         .map_err(|_| InterfaceError::FieldParseError("parent_id".to_owned()))?;
 
-    let rank_key: String = row
+    let rank: u64 = row
         .get(2)
-        .map_err(|_| InterfaceError::FieldParseError("rank_key".to_owned()))?;
+        .map_err(|_| InterfaceError::FieldParseError("rank".to_owned()))?;
 
     let created_time_str: String = row
         .get(3)
@@ -156,7 +156,7 @@ fn row_to_node(row: &Row<'_>) -> Result<Node, InterfaceError> {
     Node::from_raw_strs(
         id_str,
         parent_id_str,
-        rank_key,
+        rank,
         created_time_str,
         modified_time_str,
         node_type_str,

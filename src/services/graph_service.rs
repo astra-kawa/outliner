@@ -1,5 +1,5 @@
 use crate::{
-    domain::{DomainError, NodeGraph},
+    domain::NodeGraph,
     interfaces::NodeRepository,
     services::{errors::ServiceError, logging::LoggingService, node_service::NodeService},
 };

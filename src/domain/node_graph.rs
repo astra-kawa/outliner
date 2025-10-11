@@ -8,7 +8,7 @@ use uuid::Uuid;
 pub struct GraphElement {
     pub id: Uuid,
     pub parent_id: Option<Uuid>,
-    pub rank: String,
+    pub rank: u64,
     pub depth: usize,
     pub children: Vec<GraphElement>,
 }
@@ -29,8 +29,7 @@ impl NodeGraph {
                 continue;
             }
 
-            let element =
-                construct_sub_tree(&mut node_map, None, node.id(), node.rank_key_str(), 0);
+            let element = construct_sub_tree(&mut node_map, None, node.id(), node.rank(), 0);
 
             graph.push(element);
         }
@@ -40,10 +39,10 @@ impl NodeGraph {
 }
 
 fn construct_sub_tree(
-    node_map: &mut HashMap<Uuid, Vec<(Uuid, String)>>,
+    node_map: &mut HashMap<Uuid, Vec<(Uuid, u64)>>,
     parent_id: Option<Uuid>,
     current_id: Uuid,
-    current_rank: String,
+    current_rank: u64,
     current_depth: usize,
 ) -> GraphElement {
     let node_children = node_map.remove(&current_id);
@@ -73,17 +72,17 @@ fn construct_sub_tree(
     }
 }
 
-pub fn create_parent_children_map(nodes: &Vec<Node>) -> HashMap<Uuid, Vec<(Uuid, String)>> {
+pub fn create_parent_children_map(nodes: &Vec<Node>) -> HashMap<Uuid, Vec<(Uuid, u64)>> {
     let mut children_by_parent = HashMap::new();
 
     // basic nested for loop, improve with better logic later
     for parent_node in nodes {
-        let mut children_rank_ids: Vec<(Uuid, String)> = Vec::new();
+        let mut children_rank_ids: Vec<(Uuid, u64)> = Vec::new();
 
         for child_node in nodes {
             if let Some(childs_parent_id) = child_node.parent_id() {
                 if parent_node.id() == childs_parent_id {
-                    children_rank_ids.push((child_node.id(), child_node.rank_key_str()));
+                    children_rank_ids.push((child_node.id(), child_node.rank()));
                 }
             }
         }
